@@ -4,37 +4,37 @@
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 4%;
+    --foreground: 0 0% 95%;
 
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 95%;
+    --primary-foreground: 0 0% 4%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 50%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 0 0% 18%;
+    --accent-foreground: 0 0% 95%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 217.2 91.2% 59.8%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 0 0% 40%;
 
     --radius: 0.75rem;
 
-    --shadow-deep: 0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -2px rgba(0,0,0,0.5);
+    --shadow-deep: 0 8px 32px rgba(0,0,0,0.6);
     --easing-flow: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
@@ -45,7 +45,8 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased font-sans;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -53,50 +54,10 @@
 
 @layer utilities {
   .ring-subtle {
-    @apply ring-1 ring-white/10;
+    @apply ring-1 ring-white/[0.06];
   }
 
   .shadow-deep {
     box-shadow: var(--shadow-deep);
   }
-}
-
-/* Agent walking animation */
-@keyframes agent-walk {
-  0% { transform: translateX(-100px) translateY(0); }
-  25% { transform: translateX(25vw) translateY(-4px); }
-  50% { transform: translateX(50vw) translateY(0); }
-  75% { transform: translateX(75vw) translateY(-4px); }
-  100% { transform: translateX(calc(100vw + 100px)) translateY(0); }
-}
-
-@keyframes agent-arrive {
-  0% { transform: translateX(-100px) translateY(0); opacity: 0; }
-  20% { opacity: 1; }
-  50% { transform: translateX(calc(50vw - 24px)) translateY(-4px); }
-  70% { transform: translateX(calc(50vw - 24px)) translateY(0); }
-  100% { transform: translateX(calc(50vw - 24px)) translateY(0); }
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(1); opacity: 0.4; }
-  50% { transform: scale(1.5); opacity: 0; }
-  100% { transform: scale(1); opacity: 0; }
-}
-
-@keyframes waveform {
-  0%, 100% { height: 8px; }
-  50% { height: 24px; }
-}
-
-.animate-agent-walk {
-  animation: agent-walk 2.5s var(--easing-flow) forwards;
-}
-
-.animate-agent-arrive {
-  animation: agent-arrive 2s var(--easing-flow) forwards;
-}
-
-.animate-pulse-ring {
-  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
