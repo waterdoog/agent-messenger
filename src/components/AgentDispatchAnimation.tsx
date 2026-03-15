@@ -16,7 +16,7 @@ const AgentDispatchAnimation = ({ isActive, onComplete }: AgentDispatchAnimation
     if (isActive) {
       setPhase("walking");
       setCopied(false);
-      const timer = setTimeout(() => setPhase("done"), 2800);
+      const timer = setTimeout(() => setPhase("done"), 3000);
       return () => clearTimeout(timer);
     }
   }, [isActive]);
@@ -38,54 +38,56 @@ const AgentDispatchAnimation = ({ isActive, onComplete }: AgentDispatchAnimation
           exit={{ opacity: 0 }}
         >
           {phase === "walking" && (
-            <div className="w-full overflow-hidden flex items-center h-32">
+            <div className="w-full overflow-hidden flex items-center h-40">
               <motion.div
-                initial={{ x: -100 }}
-                animate={{ x: "calc(100vw + 100px)" }}
-                transition={{ duration: 2.5, ease: [0.4, 0, 0.2, 1] }}
+                initial={{ x: -80 }}
+                animate={{ x: "calc(100vw + 80px)" }}
+                transition={{ duration: 2.8, ease: [0.25, 0.1, 0.25, 1] }}
               >
-                <AgentCharacter size={48} animate />
+                <AgentCharacter size={52} animate walking />
               </motion.div>
             </div>
           )}
 
           {phase === "done" && (
             <motion.div
-              className="flex flex-col items-center gap-6 px-8"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="flex flex-col items-center gap-8 px-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
             >
               <motion.div
-                className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center"
+                className="w-14 h-14 rounded-full border border-foreground/20 flex items-center justify-center"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <Link size={28} className="text-primary" />
+                <Link size={22} className="text-foreground" />
               </motion.div>
 
               <div className="text-center">
-                <h2 className="text-xl font-semibold text-foreground mb-2">Agent Dispatched</h2>
-                <p className="text-sm text-muted-foreground">
-                  Your agent is ready. Share the link with recipients.
+                <h2 className="text-lg font-semibold text-foreground tracking-tight mb-1.5">
+                  Agent Dispatched
+                </h2>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Share the link with your recipients
                 </p>
               </div>
 
               <motion.button
                 onClick={handleCopy}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium text-sm shadow-deep"
-                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-foreground text-background font-medium text-sm tracking-tight"
+                whileTap={{ scale: 0.96 }}
               >
-                {copied ? <Check size={18} /> : <Copy size={18} />}
-                {copied ? "Link Copied!" : "Copy Link"}
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+                {copied ? "Copied" : "Copy Link"}
               </motion.button>
 
               <button
                 onClick={onComplete}
-                className="text-sm text-muted-foreground mt-2"
+                className="text-xs text-muted-foreground tracking-wide"
               >
-                Back to Hub
+                Done
               </button>
             </motion.div>
           )}
