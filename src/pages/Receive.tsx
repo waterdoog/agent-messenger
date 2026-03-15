@@ -17,14 +17,51 @@ const Receive = () => {
     };
   }, []);
 
+  // Simulated QnA based on meeting context
+  const getAgentReply = (userMsg: string): string => {
+    const q = userMsg.toLowerCase();
+
+    if (q.includes("summary") || q.includes("总结") || q.includes("what") && q.includes("about") || q.includes("讲了什么")) {
+      return "Here's a summary of the meeting:\n\n1. **Roadmap priorities** — The team aligned on 3 key features for Q1: user onboarding revamp, API v2, and analytics dashboard.\n\n2. **Resource allocation** — 2 additional engineers will join the product launch team starting next week.\n\n3. **Beta timeline** — Beta release is targeted for March 28. Design handoff due by March 18.\n\n4. **Action items** — Sarah owns the design spec, Mike handles API scoping, and you were assigned the analytics data model.";
+    }
+
+    if (q.includes("action") || q.includes("todo") || q.includes("要我") || q.includes("我需要做") || q.includes("assign")) {
+      return "Here are the action items assigned to you:\n\n• **Analytics data model** — Define the schema for the new dashboard (due March 15)\n• **Review Mike's API v2 proposal** — Give feedback by end of this week\n• **Schedule a sync with Sarah** — Align on the onboarding flow before design handoff";
+    }
+
+    if (q.includes("deadline") || q.includes("when") || q.includes("时间") || q.includes("date") || q.includes("timeline")) {
+      return "Key dates from the meeting:\n\n• **March 15** — Analytics data model due\n• **March 18** — Design handoff deadline\n• **March 28** — Beta release target\n• **End of this week** — API v2 proposal feedback";
+    }
+
+    if (q.includes("book") || q.includes("meet") || q.includes("slot") || q.includes("约") || q.includes("calendar")) {
+      return "You can book a follow-up meeting using the calendar slots above. Sarah is available Tue 10 AM, Wed 2 PM, and Thu 11 AM. Just tap a slot to confirm.";
+    }
+
+    if (q.includes("who") || q.includes("参加") || q.includes("attendee") || q.includes("谁")) {
+      return "Attendees: Sarah (Design Lead), Mike (Backend), Lisa (PM), and James (Eng Manager). You and Tom were absent — this delivery is specifically for you.";
+    }
+
+    if (q.includes("tell") || q.includes("relay") || q.includes("转达") || q.includes("pass") || q.includes("let them know") || q.includes("forward")) {
+      return "Sure, I'll pass that along to Sarah. She'll get your message when I return. Anything else you'd like me to relay?";
+    }
+
+    // Default: answer contextually, not just relay
+    return "Based on the meeting notes, the key takeaway relevant to you is the analytics data model assignment (due March 15). Would you like me to summarize the full discussion, list your action items, or help you book a follow-up?";
+  };
+
   const sendMessage = () => {
     if (!message.trim()) return;
-    setMessages((prev) => [
-      ...prev,
-      { from: "user", text: message },
-      { from: "agent", text: "Got it! I'll relay this to the sender." },
-    ]);
+    const userText = message;
+    setMessages((prev) => [...prev, { from: "user", text: userText }]);
     setMessage("");
+
+    // Simulate typing delay
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        { from: "agent", text: getAgentReply(userText) },
+      ]);
+    }, 600);
   };
 
   return (
