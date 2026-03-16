@@ -21,6 +21,7 @@ const Index = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dispatching, setDispatching] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [notes, setNotes] = useState<MeetingNote[]>(sampleMeetingNotes);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     { id: "0", from: "agent", text: "Hey! I'm your courier agent. What do you need?" },
