@@ -121,6 +121,7 @@ const Receive = () => {
   const [pulseStep, setPulseStep] = useState<"signup" | "sent">("signup");
   const [pulseEmail, setPulseEmail] = useState("");
   const [pulseName, setPulseName] = useState("");
+  const [showOwner, setShowOwner] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
