@@ -37,6 +37,38 @@
     --shadow-deep: 0 8px 32px rgba(0,0,0,0.6);
     --easing-flow: cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  .bright {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
+
+    --primary: 0 0% 8%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 0% 8%;
+
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 0 0% 88%;
+    --accent-foreground: 0 0% 8%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 0 0% 60%;
+
+    --shadow-deep: 0 8px 32px rgba(0,0,0,0.1);
+  }
 }
 
 @layer base {
