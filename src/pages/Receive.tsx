@@ -117,6 +117,10 @@ const Receive = () => {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPanel, setShowPanel] = useState<"files" | "calendar" | null>(null);
+  const [showAddPulse, setShowAddPulse] = useState(false);
+  const [pulseStep, setPulseStep] = useState<"signup" | "sent">("signup");
+  const [pulseEmail, setPulseEmail] = useState("");
+  const [pulseName, setPulseName] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
