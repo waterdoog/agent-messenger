@@ -229,6 +229,7 @@ const Index = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [profileView, setProfileView] = useState<"main" | "access">("main");
   const [accessTab, setAccessTab] = useState<"files" | "states">("files");
+  const [brightMode, setBrightMode] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
