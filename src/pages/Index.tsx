@@ -38,7 +38,16 @@ const Index = () => {
   const handleRecordingComplete = (duration: number) => {
     setHasRecording(true);
     setNotes((prev) => [
-      { id: Date.now().toString(), duration, timestamp: new Date() },
+      {
+        id: Date.now().toString(),
+        title: "New Recording",
+        summary: "Recording captured",
+        duration,
+        timestamp: new Date(),
+        attendees: [],
+        actionItems: [],
+        tags: ["recording"],
+      },
       ...prev,
     ]);
   };
