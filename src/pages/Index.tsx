@@ -433,10 +433,13 @@ const Index = () => {
           <h1 className="text-xl font-bold text-foreground tracking-tight">Chats</h1>
           <motion.button
             onClick={() => { setShowFriends(true); setFriendTab("requests"); }}
-            className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            className="relative w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
             whileTap={{ scale: 0.9 }}
           >
             <Plus size={16} />
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-foreground flex items-center justify-center">
+              <span className="text-[9px] font-bold text-background">2</span>
+            </span>
           </motion.button>
         </div>
 
