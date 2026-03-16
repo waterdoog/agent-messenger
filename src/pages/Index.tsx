@@ -688,20 +688,34 @@ const Index = () => {
                     )}
                   </>
                 ) : (
-                  /* Non-courier contact: show placeholder */
-                  <div className="flex-1 flex items-center justify-center pt-20">
-                    <div className="text-center">
-                      <div className={`w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center text-xl ${
-                        activeContact?.isAgent ? "bg-secondary/80" : (activeContact?.avatarBg || "bg-muted")
-                      } ${!activeContact?.isAgent ? "text-white font-bold" : ""}`}>
-                        {activeContact?.avatar}
-                      </div>
-                      <p className="text-sm font-medium text-foreground">{activeContact?.name}</p>
-                      <p className="text-xs text-muted-foreground/50 mt-1">
-                        {activeContact?.isAgent ? "Agent chat" : "Start a conversation"}
-                      </p>
-                    </div>
-                  </div>
+                  /* Non-courier contact: show messages */
+                  <>
+                    {(contactMessages[activeContactId || ""] || []).map((msg) => (
+                      <motion.div
+                        key={msg.id}
+                        className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div
+                          className={`max-w-[80%] px-3.5 py-2.5 text-xs leading-relaxed ${
+                            msg.from === "user"
+                              ? "bg-foreground text-background rounded-2xl rounded-br-md"
+                              : "bg-secondary/60 text-foreground rounded-2xl rounded-bl-md"
+                          }`}
+                        >
+                          {msg.from === "agent" ? (
+                            <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
+                              <ReactMarkdown>{msg.text}</ReactMarkdown>
+                            </div>
+                          ) : (
+                            msg.text
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </>
                 )}
                 <div ref={chatEndRef} />
               </div>
