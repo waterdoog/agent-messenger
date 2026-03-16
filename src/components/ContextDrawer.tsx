@@ -134,7 +134,7 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="pt-2 space-y-1.5 max-h-[200px] overflow-auto">
+                      <div className="pt-2 space-y-1.5 max-h-[200px] overflow-auto scrollbar-none">
                         {notes.map((note) => {
                           const selected = selectedNotes.has(note.id);
                           return (
