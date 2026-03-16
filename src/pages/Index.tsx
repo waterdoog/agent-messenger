@@ -351,7 +351,7 @@ const Index = () => {
   if (view === "contacts") {
     return (
       <div className="fixed inset-0 bg-background flex flex-col">
-        <div className="h-10 flex-shrink-0" />
+        <div className="h-3 flex-shrink-0" />
 
         <div className="px-5 pt-2 pb-3 flex-shrink-0">
           <h1 className="text-xl font-bold text-foreground tracking-tight">Chats</h1>
@@ -462,7 +462,7 @@ const Index = () => {
   // ========== CHAT / DETAIL VIEW (inside a contact) ==========
   return (
     <div className="fixed inset-0 bg-background flex flex-col">
-      <div className="h-10 flex-shrink-0" />
+      <div className="h-3 flex-shrink-0" />
 
       {/* Top Nav Bar */}
       <motion.nav
