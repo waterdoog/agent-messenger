@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic } from "lucide-react";
+import { sampleMeetingNotes, MeetingNote } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
 import RecordButton from "@/components/RecordButton";
 import ContextDrawer from "@/components/ContextDrawer";
