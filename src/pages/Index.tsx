@@ -367,6 +367,7 @@ const Index = () => {
         onClose={() => setDrawerOpen(false)}
         onSend={handleSend}
         hasRecording={hasRecording}
+        notes={notes}
       />
 
       <AgentDispatchAnimation
