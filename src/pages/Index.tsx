@@ -429,8 +429,15 @@ const Index = () => {
       <div className="fixed inset-0 bg-background flex flex-col">
         <div className="h-3 flex-shrink-0" />
 
-        <div className="px-5 pt-2 pb-3 flex-shrink-0">
+        <div className="px-5 pt-2 pb-3 flex-shrink-0 flex items-center justify-between">
           <h1 className="text-xl font-bold text-foreground tracking-tight">Chats</h1>
+          <motion.button
+            onClick={() => { setShowFriends(true); setFriendTab("requests"); }}
+            className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            whileTap={{ scale: 0.9 }}
+          >
+            <Plus size={16} />
+          </motion.button>
         </div>
 
         {/* Search */}
