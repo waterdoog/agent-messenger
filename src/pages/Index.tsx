@@ -283,11 +283,11 @@ const Index = () => {
                 Files
               </button>
               <button
-                onClick={() => setPanel("integrations")}
+                onClick={() => setPanel("states")}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Plug size={13} />
-                Integrations
+                States
               </button>
             </>
           )}
