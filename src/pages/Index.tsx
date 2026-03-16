@@ -545,13 +545,6 @@ const Index = () => {
           )}
         </div>
 
-        {/* Bottom input hint */}
-        <div className="flex-shrink-0 px-5 pb-8 pt-3">
-          <div className="flex items-center gap-3 py-3 px-4 rounded-2xl bg-secondary/30 ring-subtle">
-            <Mic size={15} className="text-muted-foreground/40 flex-shrink-0" />
-            <span className="text-xs text-muted-foreground/40">Record a meeting note...</span>
-          </div>
-        </div>
 
         {/* === Friends / Add People Overlay === */}
         <AnimatePresence>
