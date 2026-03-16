@@ -208,7 +208,7 @@ const Receive = () => {
             </div>
 
             {/* Scrollable content */}
-            <div ref={scrollRef} className="flex-1 overflow-auto min-h-0 px-4 pb-4 space-y-3">
+            <div ref={scrollRef} className="flex-1 overflow-auto scrollbar-none min-h-0 px-4 pb-4 space-y-3">
               {/* Carried Notes Cards */}
               {carriedNotes.map((note, i) => (
                 <motion.div
