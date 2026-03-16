@@ -790,11 +790,14 @@ const Index = () => {
             >
               {/* Chat header */}
               <div className="px-5 pt-4 pb-2 flex items-center gap-3 flex-shrink-0">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
-                  activeContact?.isAgent ? "bg-secondary/80" : (activeContact?.avatarBg || "bg-muted")
-                } ${!activeContact?.isAgent ? "text-white font-semibold" : ""}`}>
+                <button
+                  onClick={() => { if (activeContact?.isAgent) { setShowProfile(true); setProfileView("main"); } }}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
+                    activeContact?.isAgent ? "bg-secondary/80 cursor-pointer hover:ring-2 hover:ring-foreground/20 transition-all" : (activeContact?.avatarBg || "bg-muted")
+                  } ${!activeContact?.isAgent ? "text-white font-semibold cursor-default" : ""}`}
+                >
                   {activeContact?.avatar || "⚡"}
-                </div>
+                </button>
                 <div>
                   <h1 className="text-sm font-semibold text-foreground tracking-tight">{activeContact?.name || "Chat"}</h1>
                   {isCourierChat && (
