@@ -202,8 +202,8 @@ const Receive = () => {
                   <span className="text-sm">🤖</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-sm font-medium text-foreground tracking-tight">Agent Delivery</h1>
-                  <p className="text-[11px] text-muted-foreground">From Sarah · {carriedNotes.length} notes, 1 folder, calendar</p>
+                  <h1 className="text-sm font-medium text-foreground tracking-tight">Dash <span className="text-muted-foreground font-normal">(Sarah's Agent)</span></h1>
+                  <p className="text-[11px] text-muted-foreground">{carriedNotes.length} notes, 1 folder, calendar</p>
                 </div>
                 <div className="flex gap-1.5">
                   <motion.button
