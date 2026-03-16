@@ -1230,6 +1230,129 @@ const Index = () => {
         isActive={dispatching}
         onComplete={handleDispatchComplete}
       />
+      {/* === Agent Profile Overlay === */}
+      <AnimatePresence>
+        {showProfile && activeContact?.isAgent && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/70 z-40 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowProfile(false)}
+            />
+            <motion.div
+              className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-[28px] ring-subtle"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 300 }}
+            >
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-8 h-[3px] rounded-full bg-foreground/10" />
+              </div>
+              <div className="px-6 pb-10 pt-2">
+                <AnimatePresence mode="wait">
+                  {profileView === "main" ? (
+                    <motion.div key="profile-main" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <h2 className="text-base font-semibold text-foreground tracking-tight">Agent Profile</h2>
+                        <button onClick={() => setShowProfile(false)} className="text-muted-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                          <X size={18} />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-3 mt-4 mb-6">
+                        <div className="w-14 h-14 rounded-full border-2 border-foreground/10 flex items-center justify-center bg-secondary/80">
+                          <span className="text-lg">{activeContact.avatar}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{activeContact.name}</p>
+                          <p className="text-[11px] text-muted-foreground">{activeContact.agentName || "Agent"}</p>
+                        </div>
+                      </div>
+                      <motion.button
+                        onClick={() => setProfileView("access")}
+                        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-secondary/40 ring-subtle hover:bg-secondary/60 transition-colors"
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <div className="w-8 h-8 rounded-xl bg-foreground/[0.08] flex items-center justify-center">
+                          <Shield size={14} className="text-foreground" />
+                        </div>
+                        <span className="flex-1 text-left text-xs font-medium text-foreground">Access</span>
+                        <ChevronRight size={14} className="text-muted-foreground" />
+                      </motion.button>
+                    </motion.div>
+                  ) : (
+                    <motion.div key="profile-access" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                      <div className="flex items-center gap-2 mb-4">
+                        <button onClick={() => setProfileView("main")} className="text-muted-foreground p-1 rounded-lg hover:bg-secondary transition-colors">
+                          <ArrowLeft size={16} />
+                        </button>
+                        <h2 className="text-base font-semibold text-foreground tracking-tight">Access</h2>
+                      </div>
+                      <div className="flex gap-1 mb-4 p-1 rounded-xl bg-secondary/40">
+                        <button
+                          onClick={() => setAccessTab("files")}
+                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${accessTab === "files" ? "bg-foreground text-background" : "text-muted-foreground"}`}
+                        >
+                          Files
+                        </button>
+                        <button
+                          onClick={() => setAccessTab("states")}
+                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${accessTab === "states" ? "bg-foreground text-background" : "text-muted-foreground"}`}
+                        >
+                          States
+                        </button>
+                      </div>
+
+                      {accessTab === "files" ? (
+                        <div className="space-y-2">
+                          {[
+                            { name: "Meeting Notes", icon: FileText, count: 3 },
+                            { name: "Product Specs", icon: FolderOpen, count: 8 },
+                            { name: "Calendar", icon: Calendar, count: null },
+                          ].map((file) => (
+                            <div key={file.name} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary/30">
+                              <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center">
+                                <file.icon size={14} className="text-muted-foreground" />
+                              </div>
+                              <span className="flex-1 text-xs font-medium text-foreground">{file.name}</span>
+                              {file.count && <span className="text-[10px] text-muted-foreground">{file.count} items</span>}
+                              <Eye size={12} className="text-muted-foreground/40" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-[10px] text-muted-foreground mb-3">Past escalation requests</p>
+                          {[
+                            { requester: "Tom", resource: "WhatsApp messages on Project X", date: "Mar 12", approved: true },
+                            { requester: "Lisa", resource: "Calendar — private events", date: "Mar 10", approved: false },
+                            { requester: "Mike", resource: "Meeting notes — Q4 Review", date: "Mar 8", approved: true },
+                          ].map((c, i) => (
+                            <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary/30">
+                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${c.approved ? "bg-emerald-500/10" : "bg-red-500/10"}`}>
+                                {c.approved ? <Check size={14} className="text-emerald-500" /> : <XCircle size={14} className="text-red-400" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-foreground truncate">{c.resource}</p>
+                                <p className="text-[10px] text-muted-foreground">{c.requester} · {c.date}</p>
+                              </div>
+                              <span className={`text-[10px] font-medium ${c.approved ? "text-emerald-500" : "text-red-400"}`}>
+                                {c.approved ? "Approved" : "Denied"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
