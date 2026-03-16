@@ -944,6 +944,16 @@ const Index = () => {
                     className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none py-2"
                   />
                   <motion.button
+                    onClick={() => {
+                      setBrightMode(!brightMode);
+                      document.documentElement.classList.toggle("bright", !brightMode);
+                    }}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {brightMode ? <Moon size={14} /> : <Sun size={14} />}
+                  </motion.button>
+                  <motion.button
                     onClick={isCourierChat ? handleChatSend : undefined}
                     className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0"
                     whileTap={{ scale: 0.9 }}
