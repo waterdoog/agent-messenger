@@ -541,8 +541,8 @@ const Index = () => {
             );
           })()}
 
-          {/* === Integrations Panel === */}
-          {panel === "integrations" && (
+          {/* === States Panel === */}
+          {panel === "states" && (
             <motion.div
               key="integrations"
               className="flex-1 overflow-auto scrollbar-none px-5 pt-4 pb-8"
