@@ -25,7 +25,8 @@ interface Integration {
 interface Contact {
   id: string;
   name: string;
-  avatar: string; // emoji or initials
+  agentName?: string; // e.g. "Spark (Eason's Agent)"
+  avatar: string;
   avatarBg?: string;
   lastMessage: string;
   lastMessageTime: string;
@@ -52,30 +53,42 @@ const sampleContacts: Contact[] = [
     name: "Carol MA",
     avatar: "🐴",
     avatarBg: "bg-amber-800",
-    lastMessage: "Start a conversation",
-    lastMessageTime: "",
-    unread: 0,
+    lastMessage: "Hey, can we sync on the roadmap later today?",
+    lastMessageTime: "2:30 PM",
+    unread: 2,
     isPinned: false,
     isAgent: false,
+  },
+  {
+    id: "carol-agent",
+    name: "Dash",
+    agentName: "Carol's Agent",
+    avatar: "⚡",
+    lastMessage: "📋 Carol shared Q1 Roadmap notes with you. 3 action items pending your review.",
+    lastMessageTime: "2:15 PM",
+    unread: 1,
+    isPinned: false,
+    isAgent: true,
   },
   {
     id: "eason",
     name: "Eason W",
     avatar: "E",
     avatarBg: "bg-cyan-500",
-    lastMessage: "hi",
-    lastMessageTime: "Mar 8",
+    lastMessage: "Let me know when you're free to chat about the API",
+    lastMessageTime: "Mar 14",
     unread: 0,
     isPinned: false,
     isAgent: false,
   },
   {
     id: "eason-agent",
-    name: "Eason W (Agent)",
+    name: "Bolt",
+    agentName: "Eason's Agent",
     avatar: "⚡",
-    lastMessage: "I'll check the availability and get back to you.",
-    lastMessageTime: "Tue",
-    unread: 0,
+    lastMessage: "📅 Eason has 3 available slots this week. Want me to book one?",
+    lastMessageTime: "Mar 14",
+    unread: 1,
     isPinned: false,
     isAgent: true,
   },
@@ -92,9 +105,10 @@ const sampleContacts: Contact[] = [
   },
   {
     id: "lina-agent",
-    name: "Lina Chen (Agent)",
+    name: "Nova",
+    agentName: "Lina's Agent",
     avatar: "⚡",
-    lastMessage: "Here are Lina's available slots for this week...",
+    lastMessage: "✅ Design specs delivered. Lina confirmed receipt and left a comment.",
     lastMessageTime: "Mon",
     unread: 0,
     isPinned: false,
@@ -110,6 +124,17 @@ const sampleContacts: Contact[] = [
     unread: 0,
     isPinned: false,
     isAgent: false,
+  },
+  {
+    id: "alex-agent",
+    name: "Relay",
+    agentName: "Alex's Agent",
+    avatar: "⚡",
+    lastMessage: "📎 Alex shared 2 files: API v2 spec & migration guide. Read-only access granted.",
+    lastMessageTime: "Mar 12",
+    unread: 1,
+    isPinned: false,
+    isAgent: true,
   },
 ];
 
@@ -435,13 +460,23 @@ const Index = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-foreground truncate">{contact.name}</p>
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {contact.name}
+                          {contact.agentName && (
+                            <span className="text-muted-foreground/50 font-normal"> ({contact.agentName})</span>
+                          )}
+                        </p>
                         {contact.lastMessageTime && (
                           <span className="text-[10px] text-muted-foreground/50 flex-shrink-0 ml-2">{contact.lastMessageTime}</span>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground/60 truncate mt-0.5">{contact.lastMessage}</p>
                     </div>
+                    {contact.unread > 0 && (
+                      <div className="w-5 h-5 rounded-full bg-foreground flex items-center justify-center flex-shrink-0">
+                        <span className="text-[10px] font-bold text-background">{contact.unread}</span>
+                      </div>
+                    )}
                   </motion.button>
                 ))}
               </div>
