@@ -611,6 +611,7 @@ const Index = () => {
           {/* === Files Panel — Regular Folder Contents === */}
           {panel === "files" && openFolderId && openFolderId !== "meeting-notes" && !openNoteId && (() => {
             const folder = sampleFolders.find((f) => f.id === openFolderId);
+            if (!folder) return null;
 
             const fileIcon = (type: string) => {
               switch (type) {
