@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, Clock, Users, Tag, CheckSquare, File, Image, Table, Presentation, Code, Link2, ChevronRight, Search, Plus, UserPlus, X, Check, Shield, Eye, XCircle, ArrowLeft, Calendar } from "lucide-react";
+import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, Clock, Users, Tag, CheckSquare, File, Image, Table, Presentation, Code, Link2, ChevronRight, Search, Plus, UserPlus, X, Check, Shield, Eye, XCircle, ArrowLeft, Calendar, Sun, Moon } from "lucide-react";
 import { sampleMeetingNotes, sampleFolders, MeetingNote, FolderItem } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -229,6 +229,7 @@ const Index = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [profileView, setProfileView] = useState<"main" | "access">("main");
   const [accessTab, setAccessTab] = useState<"files" | "states">("files");
+  const [brightMode, setBrightMode] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -942,6 +943,16 @@ const Index = () => {
                     placeholder={isCourierChat ? "Talk to your agent..." : `Message ${activeContact?.name || ""}...`}
                     className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none py-2"
                   />
+                  <motion.button
+                    onClick={() => {
+                      setBrightMode(!brightMode);
+                      document.documentElement.classList.toggle("bright", !brightMode);
+                    }}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {brightMode ? <Moon size={14} /> : <Sun size={14} />}
+                  </motion.button>
                   <motion.button
                     onClick={isCourierChat ? handleChatSend : undefined}
                     className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0"
