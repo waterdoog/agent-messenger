@@ -316,6 +316,8 @@ const Receive = () => {
               )}
             </AnimatePresence>
 
+            {/* Scrollable chat area */}
+            <div ref={scrollRef} className="flex-1 overflow-auto scrollbar-none min-h-0 px-4 pb-4 space-y-3">
               {/* Chat messages */}
               {messages.map((msg, i) => (
                 <motion.div
