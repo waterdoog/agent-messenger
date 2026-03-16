@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, Clock, Users, Tag, CheckSquare, File, Image, Table, Presentation, Code, Link2, ChevronRight, Search } from "lucide-react";
+import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, Clock, Users, Tag, CheckSquare, File, Image, Table, Presentation, Code, Link2, ChevronRight, Search, Plus, UserPlus, X, Check } from "lucide-react";
 import { sampleMeetingNotes, sampleFolders, MeetingNote, FolderItem } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -221,6 +221,11 @@ const Index = () => {
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [connectedIntegrations, setConnectedIntegrations] = useState<Set<string>>(new Set());
   const [openFolderId, setOpenFolderId] = useState<string | null>(null);
+  const [showFriends, setShowFriends] = useState(false);
+  const [friendTab, setFriendTab] = useState<"add" | "requests">("requests");
+  const [friendSearch, setFriendSearch] = useState("");
+  const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
+  const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -424,8 +429,15 @@ const Index = () => {
       <div className="fixed inset-0 bg-background flex flex-col">
         <div className="h-3 flex-shrink-0" />
 
-        <div className="px-5 pt-2 pb-3 flex-shrink-0">
+        <div className="px-5 pt-2 pb-3 flex-shrink-0 flex items-center justify-between">
           <h1 className="text-xl font-bold text-foreground tracking-tight">Chats</h1>
+          <motion.button
+            onClick={() => { setShowFriends(true); setFriendTab("requests"); }}
+            className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            whileTap={{ scale: 0.9 }}
+          >
+            <Plus size={16} />
+          </motion.button>
         </div>
 
         {/* Search */}
@@ -537,6 +549,154 @@ const Index = () => {
             <span className="text-xs text-muted-foreground/40">Record a meeting note...</span>
           </div>
         </div>
+
+        {/* === Friends / Add People Overlay === */}
+        <AnimatePresence>
+          {showFriends && (
+            <>
+              <motion.div
+                className="fixed inset-0 bg-black/70 z-40 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowFriends(false)}
+              />
+              <motion.div
+                className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-[28px] ring-subtle max-h-[80vh] overflow-auto scrollbar-none"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 32, stiffness: 300 }}
+              >
+                <div className="flex justify-center pt-3 pb-1">
+                  <div className="w-8 h-[3px] rounded-full bg-foreground/10" />
+                </div>
+                <div className="px-5 pb-10 pt-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-base font-semibold text-foreground tracking-tight">Friends</h2>
+                    <button onClick={() => setShowFriends(false)} className="text-muted-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  {/* Tabs */}
+                  <div className="flex gap-1 mb-4 p-1 rounded-xl bg-secondary/40">
+                    <button
+                      onClick={() => setFriendTab("requests")}
+                      className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
+                        friendTab === "requests" ? "bg-foreground text-background" : "text-muted-foreground"
+                      }`}
+                    >
+                      Requests · 2
+                    </button>
+                    <button
+                      onClick={() => setFriendTab("add")}
+                      className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
+                        friendTab === "add" ? "bg-foreground text-background" : "text-muted-foreground"
+                      }`}
+                    >
+                      Add People
+                    </button>
+                  </div>
+
+                  {friendTab === "requests" && (
+                    <div className="space-y-2">
+                      {[
+                        { id: "req-sarah", name: "Sarah K", avatar: "S", bg: "bg-rose-500", msg: "Wants to connect with you", time: "2h ago" },
+                        { id: "req-mike", name: "Mike P", avatar: "M", bg: "bg-blue-500", msg: "Sent you a friend request", time: "1d ago" },
+                      ].map((req) => (
+                        <motion.div
+                          key={req.id}
+                          className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                        >
+                          <div className={`w-10 h-10 rounded-full ${req.bg} flex items-center justify-center text-sm font-bold text-white flex-shrink-0`}>
+                            {req.avatar}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">{req.name}</p>
+                            <p className="text-[10px] text-muted-foreground/60">{req.msg} · {req.time}</p>
+                          </div>
+                          {acceptedRequests.has(req.id) ? (
+                            <span className="text-[10px] text-muted-foreground px-2 py-1 rounded-lg bg-secondary">Added ✓</span>
+                          ) : (
+                            <div className="flex gap-1.5">
+                              <motion.button
+                                onClick={() => setAcceptedRequests(prev => new Set(prev).add(req.id))}
+                                className="px-3 py-1.5 rounded-lg bg-foreground text-background text-[11px] font-medium"
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                Accept
+                              </motion.button>
+                              <motion.button
+                                className="px-2.5 py-1.5 rounded-lg bg-secondary text-muted-foreground text-[11px]"
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                ✕
+                              </motion.button>
+                            </div>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+
+                  {friendTab === "add" && (
+                    <div>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-secondary/50 ring-subtle mb-4">
+                        <Search size={14} className="text-muted-foreground/50 flex-shrink-0" />
+                        <input
+                          type="text"
+                          value={friendSearch}
+                          onChange={(e) => setFriendSearch(e.target.value)}
+                          placeholder="Search by name or email..."
+                          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/40 outline-none"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        {[
+                          { id: "sug-david", name: "David L", avatar: "D", bg: "bg-orange-500", mutual: "3 mutual friends" },
+                          { id: "sug-emma", name: "Emma W", avatar: "E", bg: "bg-pink-500", mutual: "Works at Acme Inc" },
+                          { id: "sug-james", name: "James T", avatar: "J", bg: "bg-indigo-500", mutual: "5 mutual friends" },
+                          { id: "sug-nina", name: "Nina R", avatar: "N", bg: "bg-teal-500", mutual: "From your contacts" },
+                        ].filter(p => !friendSearch || p.name.toLowerCase().includes(friendSearch.toLowerCase()))
+                        .map((person) => (
+                          <motion.div
+                            key={person.id}
+                            className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                          >
+                            <div className={`w-10 h-10 rounded-full ${person.bg} flex items-center justify-center text-sm font-bold text-white flex-shrink-0`}>
+                              {person.avatar}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground">{person.name}</p>
+                              <p className="text-[10px] text-muted-foreground/60">{person.mutual}</p>
+                            </div>
+                            {sentRequests.has(person.id) ? (
+                              <span className="text-[10px] text-muted-foreground px-2 py-1 rounded-lg bg-secondary">Sent ✓</span>
+                            ) : (
+                              <motion.button
+                                onClick={() => setSentRequests(prev => new Set(prev).add(person.id))}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-foreground text-background text-[11px] font-medium"
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <UserPlus size={11} />
+                                Add
+                              </motion.button>
+                            )}
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     );
   }

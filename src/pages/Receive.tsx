@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, FileText, Send, FolderOpen, X } from "lucide-react";
+import { Calendar, FileText, Send, FolderOpen, X, UserPlus } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import AgentCharacter from "@/components/AgentCharacter";
 import { sampleMeetingNotes } from "@/data/sampleNotes";
@@ -117,6 +117,10 @@ const Receive = () => {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPanel, setShowPanel] = useState<"files" | "calendar" | null>(null);
+  const [showAddPulse, setShowAddPulse] = useState(false);
+  const [pulseStep, setPulseStep] = useState<"signup" | "sent">("signup");
+  const [pulseEmail, setPulseEmail] = useState("");
+  const [pulseName, setPulseName] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -228,7 +232,112 @@ const Receive = () => {
                   </motion.button>
                 </div>
               </div>
+
+              {/* Add me on Pulse banner */}
+              <div className="px-6 pb-3">
+                <motion.button
+                  onClick={() => { setShowAddPulse(true); setPulseStep("signup"); }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-foreground text-background text-xs font-medium"
+                  whileTap={{ scale: 0.97 }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <UserPlus size={13} />
+                  Add me on Pulse
+                </motion.button>
+              </div>
             </div>
+
+            {/* === Add on Pulse Overlay === */}
+            <AnimatePresence>
+              {showAddPulse && (
+                <>
+                  <motion.div
+                    className="fixed inset-0 bg-black/70 z-40 backdrop-blur-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowAddPulse(false)}
+                  />
+                  <motion.div
+                    className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-[28px] ring-subtle"
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: "spring", damping: 32, stiffness: 300 }}
+                  >
+                    <div className="flex justify-center pt-3 pb-1">
+                      <div className="w-8 h-[3px] rounded-full bg-foreground/10" />
+                    </div>
+                    <div className="px-6 pb-10 pt-2">
+                      {pulseStep === "signup" ? (
+                        <>
+                          <div className="flex items-center justify-between mb-1">
+                            <h2 className="text-base font-semibold text-foreground tracking-tight">Join Pulse</h2>
+                            <button onClick={() => setShowAddPulse(false)} className="text-muted-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                              <X size={18} />
+                            </button>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-5">Create an account to add Sarah as a friend and start using agents</p>
+
+                          <div className="space-y-3 mb-5">
+                            <div>
+                              <label className="text-[11px] text-muted-foreground/70 font-medium mb-1.5 block">Name</label>
+                              <input
+                                type="text"
+                                value={pulseName}
+                                onChange={(e) => setPulseName(e.target.value)}
+                                placeholder="Your name"
+                                className="w-full px-4 py-3 rounded-xl bg-secondary/50 ring-subtle text-sm text-foreground placeholder:text-muted-foreground/40 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[11px] text-muted-foreground/70 font-medium mb-1.5 block">Email</label>
+                              <input
+                                type="email"
+                                value={pulseEmail}
+                                onChange={(e) => setPulseEmail(e.target.value)}
+                                placeholder="your@email.com"
+                                className="w-full px-4 py-3 rounded-xl bg-secondary/50 ring-subtle text-sm text-foreground placeholder:text-muted-foreground/40 outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <motion.button
+                            onClick={() => setPulseStep("sent")}
+                            disabled={!pulseName.trim() || !pulseEmail.trim()}
+                            className="w-full py-4 rounded-2xl bg-foreground text-background font-semibold text-sm tracking-tight disabled:opacity-20 transition-opacity"
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            Sign Up & Add Sarah
+                          </motion.button>
+                        </>
+                      ) : (
+                        <motion.div
+                          className="text-center py-6"
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                        >
+                          <div className="w-14 h-14 rounded-full bg-foreground/10 mx-auto mb-4 flex items-center justify-center text-2xl">
+                            ✅
+                          </div>
+                          <h2 className="text-base font-semibold text-foreground mb-1">Friend Request Sent!</h2>
+                          <p className="text-xs text-muted-foreground mb-6">Sarah will be notified. You can start chatting once she accepts.</p>
+                          <motion.button
+                            onClick={() => setShowAddPulse(false)}
+                            className="w-full py-4 rounded-2xl bg-foreground text-background font-semibold text-sm tracking-tight"
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            Done
+                          </motion.button>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
 
             {/* Expandable Content Panel */}
             <AnimatePresence>
