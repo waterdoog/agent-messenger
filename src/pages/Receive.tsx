@@ -121,6 +121,7 @@ const Receive = () => {
   const [pulseStep, setPulseStep] = useState<"signup" | "sent">("signup");
   const [pulseEmail, setPulseEmail] = useState("");
   const [pulseName, setPulseName] = useState("");
+  const [showOwner, setShowOwner] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -207,7 +208,7 @@ const Receive = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h1 className="text-sm font-medium text-foreground tracking-tight whitespace-nowrap">Dash <span className="text-muted-foreground font-normal">(Sarah's Agent)</span></h1>
+                    <h1 onClick={() => setShowOwner(!showOwner)} className="text-sm font-medium text-foreground tracking-tight whitespace-nowrap cursor-pointer select-none">{showOwner ? "Sarah's Agent" : "Dash"}</h1>
                     <motion.button
                       onClick={() => { setShowAddPulse(true); setPulseStep("signup"); }}
                       className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-foreground/10 text-[10px] text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
