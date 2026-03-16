@@ -12,7 +12,7 @@ interface ContextDrawerProps {
 }
 
 const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) => {
-  const [expandedSection, setExpandedSection] = useState<string | null>("notes");
+  const [expandedSection, setExpandedSection] = useState<string | null>("files");
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
   const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
   const [selectedCalPerm, setSelectedCalPerm] = useState<string | null>(null);
@@ -103,22 +103,22 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
                 Select exactly what your agent carries
               </p>
 
-              {/* === NOTES SECTION === */}
+              {/* === FILES SECTION (Notes + Folders) === */}
               <div className="mb-3">
                 <button
-                  onClick={() => toggleSection("notes")}
+                  onClick={() => toggleSection("files")}
                   className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-secondary/40 ring-subtle"
                 >
                   <div className="flex items-center gap-2.5">
-                    <FileText size={15} className="text-muted-foreground" />
-                    <span className="text-xs font-medium text-foreground">Meeting Notes</span>
-                    {selectedNotes.size > 0 && (
+                    <FolderOpen size={15} className="text-muted-foreground" />
+                    <span className="text-xs font-medium text-foreground">Files</span>
+                    {(selectedNotes.size + selectedFolders.size) > 0 && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-foreground text-background font-medium">
-                        {selectedNotes.size}
+                        {selectedNotes.size + selectedFolders.size}
                       </span>
                     )}
                   </div>
-                  {expandedSection === "notes" ? (
+                  {expandedSection === "files" ? (
                     <ChevronUp size={14} className="text-muted-foreground" />
                   ) : (
                     <ChevronDown size={14} className="text-muted-foreground" />
@@ -126,7 +126,7 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
                 </button>
 
                 <AnimatePresence>
-                  {expandedSection === "notes" && (
+                  {expandedSection === "files" && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
@@ -134,7 +134,8 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="pt-2 space-y-1.5 max-h-[200px] overflow-auto scrollbar-none">
+                      <div className="pt-2 space-y-1.5 max-h-[280px] overflow-auto scrollbar-none">
+                        <p className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider px-1 pt-1">Meeting Notes</p>
                         {notes.map((note) => {
                           const selected = selectedNotes.has(note.id);
                           return (
@@ -153,6 +154,7 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
                               }`}>
                                 {selected && <Check size={9} className="text-background" strokeWidth={3} />}
                               </div>
+                              <FileText size={14} className="text-muted-foreground/60 mt-0.5 flex-shrink-0" />
                               <div className="flex-1 min-w-0">
                                 <p className={`text-xs font-medium truncate ${selected ? "text-foreground" : "text-muted-foreground"}`}>
                                   {note.title}
@@ -164,44 +166,8 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
                             </motion.button>
                           );
                         })}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
 
-              {/* === FOLDERS SECTION === */}
-              <div className="mb-3">
-                <button
-                  onClick={() => toggleSection("folders")}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-secondary/40 ring-subtle"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <FolderOpen size={15} className="text-muted-foreground" />
-                    <span className="text-xs font-medium text-foreground">Folders</span>
-                    {selectedFolders.size > 0 && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-foreground text-background font-medium">
-                        {selectedFolders.size}
-                      </span>
-                    )}
-                  </div>
-                  {expandedSection === "folders" ? (
-                    <ChevronUp size={14} className="text-muted-foreground" />
-                  ) : (
-                    <ChevronDown size={14} className="text-muted-foreground" />
-                  )}
-                </button>
-
-                <AnimatePresence>
-                  {expandedSection === "folders" && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="pt-2 space-y-1.5">
+                        <p className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider px-1 pt-2">Folders</p>
                         {sampleFolders.map((folder) => {
                           const selected = selectedFolders.has(folder.id);
                           return (
