@@ -219,6 +219,30 @@ const Receive = () => {
                   </div>
                   <p className="text-[11px] text-muted-foreground">{carriedNotes.length} notes, 1 folder, calendar</p>
                 </div>
+                <div className="flex gap-1.5">
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => setShowPanel(showPanel === "files" ? null : "files")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
+                      showPanel === "files" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
+                    }`}
+                  >
+                    <FolderOpen size={12} />
+                    Files
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => setShowPanel(showPanel === "calendar" ? null : "calendar")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
+                      showPanel === "calendar" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
+                    }`}
+                  >
+                    <Calendar size={12} />
+                    Calendar
+                  </motion.button>
+                </div>
+              </div>
+            </div>
 
             {/* === Add on Pulse Overlay === */}
             <AnimatePresence>
