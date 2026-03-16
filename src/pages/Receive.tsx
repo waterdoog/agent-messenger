@@ -1,13 +1,121 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, FileText, Send } from "lucide-react";
+import { Calendar, FileText, Send, FolderOpen } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import AgentCharacter from "@/components/AgentCharacter";
+import { sampleMeetingNotes } from "@/data/sampleNotes";
+
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+
+type Msg = { role: "user" | "assistant"; content: string };
+
+// Build context string from carried items
+const buildContext = () => {
+  const notes = sampleMeetingNotes.slice(0, 3); // Simulate carrying first 3 notes
+  let ctx = "## Meeting Notes Carried:\n\n";
+  notes.forEach((note) => {
+    ctx += `### ${note.title}\n`;
+    ctx += `- Date: ${note.timestamp.toLocaleDateString()}\n`;
+    ctx += `- Duration: ${Math.floor(note.duration / 60)} min\n`;
+    ctx += `- Attendees: ${note.attendees.join(", ")}\n`;
+    ctx += `- Summary: ${note.summary}\n`;
+    ctx += `- Action Items:\n`;
+    note.actionItems.forEach((item) => (ctx += `  - ${item}\n`));
+    ctx += `- Tags: ${note.tags.join(", ")}\n\n`;
+  });
+  ctx += "\n## Calendar Access: View availability (recipient can see free/busy slots)\n";
+  ctx += "Available slots: Tue 10:00 AM, Wed 2:00 PM, Thu 11:00 AM\n";
+  ctx += "\n## Folders Shared: Product Specs (8 files)\n";
+  return ctx;
+};
+
+const contextString = buildContext();
+
+async function streamChat({
+  messages,
+  onDelta,
+  onDone,
+  onError,
+}: {
+  messages: Msg[];
+  onDelta: (text: string) => void;
+  onDone: () => void;
+  onError: (err: string) => void;
+}) {
+  const resp = await fetch(CHAT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+    },
+    body: JSON.stringify({ messages, context: contextString }),
+  });
+
+  if (!resp.ok) {
+    const data = await resp.json().catch(() => ({}));
+    onError(data.error || `Error ${resp.status}`);
+    return;
+  }
+
+  if (!resp.body) {
+    onError("No response body");
+    return;
+  }
+
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let textBuffer = "";
+  let streamDone = false;
+
+  while (!streamDone) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    textBuffer += decoder.decode(value, { stream: true });
+
+    let newlineIndex: number;
+    while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+      let line = textBuffer.slice(0, newlineIndex);
+      textBuffer = textBuffer.slice(newlineIndex + 1);
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (line.startsWith(":") || line.trim() === "") continue;
+      if (!line.startsWith("data: ")) continue;
+      const jsonStr = line.slice(6).trim();
+      if (jsonStr === "[DONE]") { streamDone = true; break; }
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) onDelta(content);
+      } catch {
+        textBuffer = line + "\n" + textBuffer;
+        break;
+      }
+    }
+  }
+
+  // Final flush
+  if (textBuffer.trim()) {
+    for (let raw of textBuffer.split("\n")) {
+      if (!raw) continue;
+      if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+      if (raw.startsWith(":") || raw.trim() === "") continue;
+      if (!raw.startsWith("data: ")) continue;
+      const jsonStr = raw.slice(6).trim();
+      if (jsonStr === "[DONE]") continue;
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) onDelta(content);
+      } catch { /* ignore */ }
+    }
+  }
+  onDone();
+}
 
 const Receive = () => {
   const [phase, setPhase] = useState<"arriving" | "expanding" | "chat">("arriving");
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<{ from: "agent" | "user"; text: string }[]>([]);
-  const [replyIndex, setReplyIndex] = useState(0);
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,73 +128,42 @@ const Receive = () => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  const contextualReplies = [
-    "The meeting covered three main topics: Q1 roadmap priorities, resource allocation for the product launch, and beta release timeline. Want me to break any of these down?",
-    "Your key action items:\n\n• Define the analytics data model schema (due March 15)\n• Review Mike's API v2 proposal (due this Friday)\n• Schedule a sync with Sarah on the onboarding flow",
-    "Key dates:\n\n• March 15 — Analytics schema due\n• March 18 — Design handoff\n• March 28 — Beta release\n• This Friday — API v2 feedback",
-    "The team decided to prioritize user onboarding revamp as the #1 feature. API v2 is second, and analytics dashboard third. Sarah is leading design, Mike owns backend.",
-    "Two additional engineers (from the platform team) will join the product launch squad starting next Monday. James confirmed headcount approval.",
-    "The beta release scope includes: new onboarding flow, API v2 endpoints, and a basic analytics dashboard. Full analytics is post-launch.",
-  ];
+  const carriedNotes = sampleMeetingNotes.slice(0, 3);
 
-  const getAgentReply = (userMsg: string): string => {
-    const q = userMsg.toLowerCase();
-
-    if (q.includes("summary") || q.includes("总结") || (q.includes("what") && q.includes("about")) || q.includes("讲了什么") || q.includes("overview")) {
-      return "Here's a summary:\n\n1. Roadmap — 3 key Q1 features: onboarding revamp, API v2, analytics dashboard\n2. Resources — 2 engineers joining product launch next week\n3. Beta — Targeted March 28, design handoff due March 18\n4. Your tasks — Analytics data model (March 15), review API proposal (this week)";
-    }
-
-    if (q.includes("action") || q.includes("todo") || q.includes("要我") || q.includes("我需要做") || q.includes("assign") || q.includes("task")) {
-      return "Your action items:\n\n• Analytics data model — define schema (due March 15)\n• Review Mike's API v2 proposal — feedback by Friday\n• Schedule sync with Sarah — align on onboarding before March 18";
-    }
-
-    if (q.includes("deadline") || q.includes("when") || q.includes("时间") || q.includes("date") || q.includes("timeline") || q.includes("due")) {
-      return "Key dates:\n\n• March 15 — Analytics data model due\n• March 18 — Design handoff deadline\n• March 28 — Beta release target\n• This Friday — API v2 feedback due";
-    }
-
-    if (q.includes("book") || q.includes("meet") || q.includes("slot") || q.includes("约") || q.includes("calendar") || q.includes("schedule")) {
-      return "You can book a follow-up using the calendar slots above. Sarah is available Tue 10 AM, Wed 2 PM, and Thu 11 AM. Tap any slot to confirm.";
-    }
-
-    if (q.includes("who") || q.includes("参加") || q.includes("attendee") || q.includes("谁") || q.includes("people")) {
-      return "Attendees: Sarah (Design Lead), Mike (Backend), Lisa (PM), and James (Eng Manager). You and Tom were absent — this delivery is for both of you.";
-    }
-
-    if (q.includes("tell") || q.includes("relay") || q.includes("转达") || q.includes("pass") || q.includes("let them know") || q.includes("forward") || q.includes("回复")) {
-      return "Sure, I'll pass that along to Sarah when I return. Anything else you'd like me to relay?";
-    }
-
-    if (q.includes("priority") || q.includes("重点") || q.includes("important") || q.includes("focus")) {
-      return "Top priority is the user onboarding revamp — Sarah's leading design. API v2 is second (Mike owns it). Analytics dashboard is third and that's your domain.";
-    }
-
-    if (q.includes("resource") || q.includes("team") || q.includes("engineer") || q.includes("人")) {
-      return "Two engineers from the platform team are joining the product launch squad next Monday. James got headcount approval. Total team will be 8 people.";
-    }
-
-    if (q.includes("beta") || q.includes("launch") || q.includes("scope") || q.includes("release")) {
-      return "Beta scope: new onboarding flow + API v2 endpoints + basic analytics dashboard. Full analytics features are planned for post-launch.";
-    }
-
-    if (q.includes("thank") || q.includes("谢") || q.includes("ok") || q.includes("got it") || q.includes("好")) {
-      return "You're welcome! Let me know if you need anything else — I can summarize, list action items, or help you book a follow-up.";
-    }
-
-    // Cycle through contextual replies for generic messages
-    const reply = contextualReplies[replyIndex % contextualReplies.length];
-    setReplyIndex((prev) => prev + 1);
-    return reply;
-  };
-
-  const sendMessage = () => {
-    if (!message.trim()) return;
-    const userText = message;
-    setMessages((prev) => [...prev, { from: "user", text: userText }]);
+  const sendMessage = async () => {
+    if (!message.trim() || isLoading) return;
+    const userMsg: Msg = { role: "user", content: message };
+    const allMessages = [...messages, userMsg];
+    setMessages(allMessages);
     setMessage("");
+    setIsLoading(true);
 
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { from: "agent", text: getAgentReply(userText) }]);
-    }, 600);
+    let assistantSoFar = "";
+    const upsertAssistant = (chunk: string) => {
+      assistantSoFar += chunk;
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant") {
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
+        }
+        return [...prev, { role: "assistant", content: assistantSoFar }];
+      });
+    };
+
+    try {
+      await streamChat({
+        messages: allMessages,
+        onDelta: (chunk) => upsertAssistant(chunk),
+        onDone: () => setIsLoading(false),
+        onError: (err) => {
+          upsertAssistant(`⚠️ ${err}`);
+          setIsLoading(false);
+        },
+      });
+    } catch (e) {
+      console.error(e);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -116,7 +193,7 @@ const Receive = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Header - fixed */}
+            {/* Header */}
             <div className="flex-shrink-0">
               <div className="h-14" />
               <div className="px-6 pb-4 flex items-center gap-3">
@@ -125,30 +202,62 @@ const Receive = () => {
                 </div>
                 <div>
                   <h1 className="text-sm font-medium text-foreground tracking-tight">Agent Delivery</h1>
-                  <p className="text-[11px] text-muted-foreground">From Sarah · 2 items</p>
+                  <p className="text-[11px] text-muted-foreground">From Sarah · {carriedNotes.length} notes, 1 folder, calendar</p>
                 </div>
               </div>
             </div>
 
             {/* Scrollable content */}
             <div ref={scrollRef} className="flex-1 overflow-auto min-h-0 px-4 pb-4 space-y-3">
-              {/* Meeting Notes */}
-              <motion.div className="bg-card rounded-2xl ring-subtle p-4" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.5 }}>
-                <div className="flex items-center gap-2 mb-2.5">
-                  <FileText size={14} className="text-foreground/60" />
-                  <span className="text-xs font-medium text-foreground">Meeting Notes</span>
+              {/* Carried Notes Cards */}
+              {carriedNotes.map((note, i) => (
+                <motion.div
+                  key={note.id}
+                  className="bg-card rounded-2xl ring-subtle p-4"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + i * 0.1, duration: 0.5 }}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText size={13} className="text-foreground/60" />
+                    <span className="text-xs font-medium text-foreground">{note.title}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-[1.7]">{note.summary}</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {note.tags.map((tag) => (
+                      <span key={tag} className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">
+                        {tag}
+                      </span>
+                    ))}
+                    <span className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">
+                      {Math.floor(note.duration / 60)} min
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+
+              {/* Folder Card */}
+              <motion.div
+                className="bg-card rounded-2xl ring-subtle p-4"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <FolderOpen size={13} className="text-foreground/60" />
+                  <span className="text-xs font-medium text-foreground">Product Specs</span>
+                  <span className="text-[10px] text-muted-foreground">· 8 files</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-[1.7]">
-                  Q1 planning meeting — discussed roadmap priorities, resource allocation for the new product launch, and timeline for the beta release. Action items assigned to engineering and design teams.
-                </p>
-                <div className="mt-3 flex items-center gap-2 text-[10px] text-muted-foreground/60">
-                  <span className="px-2 py-0.5 rounded-md bg-secondary">15 min</span>
-                  <span>Today, 2:30 PM</span>
-                </div>
+                <p className="text-[10px] text-muted-foreground">Shared read-only access</p>
               </motion.div>
 
-              {/* Calendar */}
-              <motion.div className="bg-card rounded-2xl ring-subtle p-4" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }}>
+              {/* Calendar Card */}
+              <motion.div
+                className="bg-card rounded-2xl ring-subtle p-4"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+              >
                 <div className="flex items-center gap-2 mb-2.5">
                   <Calendar size={14} className="text-foreground/60" />
                   <span className="text-xs font-medium text-foreground">Book a Slot</span>
@@ -162,7 +271,12 @@ const Receive = () => {
                 </div>
               </motion.div>
 
-              <motion.p className="text-center text-[10px] text-muted-foreground/40 py-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+              <motion.p
+                className="text-center text-[10px] text-muted-foreground/40 py-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
                 🔒 Only permitted context is shared
               </motion.p>
 
@@ -170,24 +284,41 @@ const Receive = () => {
               {messages.map((msg, i) => (
                 <motion.div
                   key={i}
-                  className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
                   <div
-                    className={`max-w-[85%] px-4 py-2.5 text-xs leading-relaxed whitespace-pre-line ${
-                      msg.from === "user"
+                    className={`max-w-[85%] px-4 py-2.5 text-xs leading-relaxed ${
+                      msg.role === "user"
                         ? "bg-foreground text-background rounded-2xl rounded-br-md"
                         : "bg-secondary text-foreground rounded-2xl rounded-bl-md"
                     }`}
                   >
-                    {msg.text}
+                    {msg.role === "assistant" ? (
+                      <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5 [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:my-1">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                 </motion.div>
               ))}
+
+              {/* Typing indicator */}
+              {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
+                <motion.div className="flex justify-start" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <div className="bg-secondary rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
+                    <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} />
+                    <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }} />
+                    <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }} />
+                  </div>
+                </motion.div>
+              )}
             </div>
 
-            {/* Input - pinned to bottom */}
+            {/* Input */}
             <div className="flex-shrink-0 px-5 pb-8 pt-3 border-t border-foreground/[0.04]">
               <div className="flex items-center gap-3 bg-secondary/50 rounded-2xl ring-subtle px-4 py-1.5">
                 <input
@@ -197,11 +328,13 @@ const Receive = () => {
                   onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                   placeholder="Ask about the meeting..."
                   className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none py-2.5"
+                  disabled={isLoading}
                 />
                 <motion.button
                   onClick={sendMessage}
-                  className="w-9 h-9 rounded-xl bg-foreground flex items-center justify-center flex-shrink-0"
+                  className="w-9 h-9 rounded-xl bg-foreground flex items-center justify-center flex-shrink-0 disabled:opacity-30"
                   whileTap={{ scale: 0.9 }}
+                  disabled={isLoading || !message.trim()}
                 >
                   <Send size={15} className="text-background" />
                 </motion.button>
