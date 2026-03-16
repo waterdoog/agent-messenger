@@ -462,7 +462,7 @@ const Index = () => {
   // ========== CHAT / DETAIL VIEW (inside a contact) ==========
   return (
     <div className="fixed inset-0 bg-background flex flex-col">
-      <div className="h-10 flex-shrink-0" />
+      <div className="h-3 flex-shrink-0" />
 
       {/* Top Nav Bar */}
       <motion.nav
