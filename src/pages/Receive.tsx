@@ -116,7 +116,7 @@ const Receive = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPanel, setShowPanel] = useState<"notes" | "files" | null>(null);
+  const [showPanel, setShowPanel] = useState<"files" | "calendar" | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -208,16 +208,6 @@ const Receive = () => {
                 <div className="flex gap-1.5">
                   <motion.button
                     whileTap={{ scale: 0.92 }}
-                    onClick={() => setShowPanel(showPanel === "notes" ? null : "notes")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
-                      showPanel === "notes" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
-                    }`}
-                  >
-                    <FileText size={12} />
-                    Notes
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.92 }}
                     onClick={() => setShowPanel(showPanel === "files" ? null : "files")}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
                       showPanel === "files" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
@@ -225,6 +215,16 @@ const Receive = () => {
                   >
                     <FolderOpen size={12} />
                     Files
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => setShowPanel(showPanel === "calendar" ? null : "calendar")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
+                      showPanel === "calendar" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
+                    }`}
+                  >
+                    <Calendar size={12} />
+                    Calendar
                   </motion.button>
                 </div>
               </div>
@@ -243,44 +243,43 @@ const Receive = () => {
                   <div className="px-4 pb-4 space-y-2.5 max-h-[50vh] overflow-auto scrollbar-none">
                     <div className="flex items-center justify-between px-1 pt-1">
                       <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                        {showPanel === "notes" ? "Meeting Notes" : "Shared Files & Calendar"}
+                        {showPanel === "files" ? "Notes & Files" : "Book a Slot"}
                       </span>
                       <button onClick={() => setShowPanel(null)} className="p-1 rounded-lg hover:bg-secondary transition-colors">
                         <X size={14} className="text-muted-foreground" />
                       </button>
                     </div>
 
-                    {showPanel === "notes" && carriedNotes.map((note, i) => (
-                      <motion.div
-                        key={note.id}
-                        className="bg-card rounded-2xl ring-subtle p-4"
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.06, duration: 0.3 }}
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <FileText size={13} className="text-foreground/60" />
-                          <span className="text-xs font-medium text-foreground">{note.title}</span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground leading-[1.7]">{note.summary}</p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {note.tags.map((tag) => (
-                            <span key={tag} className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">{tag}</span>
-                          ))}
-                          <span className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">
-                            {Math.floor(note.duration / 60)} min
-                          </span>
-                        </div>
-                      </motion.div>
-                    ))}
-
                     {showPanel === "files" && (
                       <>
+                        {carriedNotes.map((note, i) => (
+                          <motion.div
+                            key={note.id}
+                            className="bg-card rounded-2xl ring-subtle p-4"
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.06, duration: 0.3 }}
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <FileText size={13} className="text-foreground/60" />
+                              <span className="text-xs font-medium text-foreground">{note.title}</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground leading-[1.7]">{note.summary}</p>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {note.tags.map((tag) => (
+                                <span key={tag} className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">{tag}</span>
+                              ))}
+                              <span className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">
+                                {Math.floor(note.duration / 60)} min
+                              </span>
+                            </div>
+                          </motion.div>
+                        ))}
                         <motion.div
                           className="bg-card rounded-2xl ring-subtle p-4"
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
+                          transition={{ delay: carriedNotes.length * 0.06, duration: 0.3 }}
                         >
                           <div className="flex items-center gap-2 mb-1">
                             <FolderOpen size={13} className="text-foreground/60" />
@@ -289,25 +288,28 @@ const Receive = () => {
                           </div>
                           <p className="text-[10px] text-muted-foreground">Shared read-only access</p>
                         </motion.div>
-                        <motion.div
-                          className="bg-card rounded-2xl ring-subtle p-4"
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.06, duration: 0.3 }}
-                        >
-                          <div className="flex items-center gap-2 mb-2.5">
-                            <Calendar size={14} className="text-foreground/60" />
-                            <span className="text-xs font-medium text-foreground">Book a Slot</span>
-                          </div>
-                          <div className="space-y-1.5">
-                            {["Tue 10:00 AM", "Wed 2:00 PM", "Thu 11:00 AM"].map((slot) => (
-                              <button key={slot} className="w-full text-left px-3 py-2.5 rounded-xl bg-secondary/60 ring-subtle text-xs text-foreground hover:bg-foreground/[0.08] transition-colors">
-                                {slot}
-                              </button>
-                            ))}
-                          </div>
-                        </motion.div>
                       </>
+                    )}
+
+                    {showPanel === "calendar" && (
+                      <motion.div
+                        className="bg-card rounded-2xl ring-subtle p-4"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <Calendar size={14} className="text-foreground/60" />
+                          <span className="text-xs font-medium text-foreground">Available Slots</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {["Tue 10:00 AM", "Wed 2:00 PM", "Thu 11:00 AM"].map((slot) => (
+                            <button key={slot} className="w-full text-left px-3 py-2.5 rounded-xl bg-secondary/60 ring-subtle text-xs text-foreground hover:bg-foreground/[0.08] transition-colors">
+                              {slot}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
                     )}
 
                     <p className="text-center text-[10px] text-muted-foreground/40 py-1">🔒 Only permitted context is shared</p>
