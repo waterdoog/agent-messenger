@@ -137,7 +137,6 @@ const Receive = () => {
   const accessibleFiles = [
     { name: "Meeting Notes", type: "folder", count: 3, icon: FileText },
     { name: "Product Specs", type: "folder", count: 8, icon: FolderOpen },
-    { name: "Calendar", type: "integration", count: null, icon: Calendar },
   ];
 
   useEffect(() => {

@@ -1310,7 +1310,6 @@ const Index = () => {
                           {[
                             { name: "Meeting Notes", icon: FileText, count: 3 },
                             { name: "Product Specs", icon: FolderOpen, count: 8 },
-                            { name: "Calendar", icon: Calendar, count: null },
                           ].map((file) => (
                             <div key={file.name} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary/30">
                               <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center">
