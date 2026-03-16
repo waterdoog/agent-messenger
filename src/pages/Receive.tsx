@@ -206,7 +206,17 @@ const Receive = () => {
                   <span className="text-sm">🤖</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-sm font-medium text-foreground tracking-tight">Dash <span className="text-muted-foreground font-normal">(Sarah's Agent)</span></h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-sm font-medium text-foreground tracking-tight">Dash <span className="text-muted-foreground font-normal">(Sarah's Agent)</span></h1>
+                    <motion.button
+                      onClick={() => { setShowAddPulse(true); setPulseStep("signup"); }}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-foreground/10 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <UserPlus size={10} />
+                      Add
+                    </motion.button>
+                  </div>
                   <p className="text-[11px] text-muted-foreground">{carriedNotes.length} notes, 1 folder, calendar</p>
                 </div>
                 <div className="flex gap-1.5">
@@ -231,21 +241,6 @@ const Receive = () => {
                     Calendar
                   </motion.button>
                 </div>
-              </div>
-
-              {/* Add me on Pulse banner */}
-              <div className="px-6 pb-3">
-                <motion.button
-                  onClick={() => { setShowAddPulse(true); setPulseStep("signup"); }}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-foreground text-background text-xs font-medium"
-                  whileTap={{ scale: 0.97 }}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <UserPlus size={13} />
-                  Add me on Pulse
-                </motion.button>
               </div>
             </div>
 
