@@ -62,21 +62,79 @@ const Index = () => {
     setInputText("");
   };
 
-  const handleChatSend = () => {
-    if (!inputText.trim()) return;
+  const handleChatSend = async () => {
+    if (!inputText.trim() || isAiLoading) return;
     const userMsg: ChatMessage = { id: Date.now().toString(), from: "user", text: inputText };
     setChatMessages((prev) => [...prev, userMsg]);
     setInputText("");
-    setTimeout(() => {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          from: "agent",
-          text: "Got it, I'll take care of that for you.",
+    setIsAiLoading(true);
+
+    // Build conversation history for AI
+    const allMsgs = [...chatMessages, userMsg].map((m) => ({
+      role: m.from === "user" ? "user" as const : "assistant" as const,
+      content: m.text,
+    }));
+
+    const senderContext = `You are Courier, a helpful AI agent on the sender side. You help the user prepare what to send — organize meeting notes, pick files, and set up calendar permissions. You have access to ${notes.length} meeting notes. Be concise and helpful. Answer in the same language as the user.`;
+
+    let assistantSoFar = "";
+    const upsert = (chunk: string) => {
+      assistantSoFar += chunk;
+      setChatMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.from === "agent") {
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, text: assistantSoFar } : m));
+        }
+        return [...prev, { id: (Date.now() + 1).toString(), from: "agent", text: assistantSoFar }];
+      });
+    };
+
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-      ]);
-    }, 800);
+        body: JSON.stringify({ messages: allMsgs, context: senderContext }),
+      });
+
+      if (!resp.ok || !resp.body) {
+        const data = await resp.json().catch(() => ({}));
+        upsert(`⚠️ ${data.error || "Something went wrong"}`);
+        setIsAiLoading(false);
+        return;
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      let done = false;
+
+      while (!done) {
+        const { done: rd, value } = await reader.read();
+        if (rd) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, idx);
+          buf = buf.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const json = line.slice(6).trim();
+          if (json === "[DONE]") { done = true; break; }
+          try {
+            const p = JSON.parse(json);
+            const c = p.choices?.[0]?.delta?.content;
+            if (c) upsert(c);
+          } catch { buf = line + "\n" + buf; break; }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      upsert("⚠️ Connection error");
+    }
+    setIsAiLoading(false);
   };
 
   const formatDuration = (s: number) => {
