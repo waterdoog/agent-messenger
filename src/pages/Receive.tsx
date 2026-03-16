@@ -207,17 +207,15 @@ const Receive = () => {
                   <span className="text-xs font-semibold text-foreground">D</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h1 onClick={() => setShowOwner(!showOwner)} className="text-sm font-medium text-foreground tracking-tight whitespace-nowrap cursor-pointer select-none">{showOwner ? "Sarah's Agent" : "Dash"}</h1>
-                    <motion.button
-                      onClick={() => { setShowAddPulse(true); setPulseStep("signup"); }}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-foreground/10 text-[10px] text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <UserPlus size={10} />
-                      Add
-                    </motion.button>
-                  </div>
+                  <h1 onClick={() => setShowOwner(!showOwner)} className="text-sm font-medium text-foreground tracking-tight whitespace-nowrap cursor-pointer select-none">{showOwner ? "Sarah's Agent" : "Dash"}</h1>
+                  <motion.button
+                    onClick={() => { setShowAddPulse(true); setPulseStep("signup"); }}
+                    className="flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-md bg-foreground/10 text-[10px] text-muted-foreground hover:text-foreground transition-colors w-fit"
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <UserPlus size={10} />
+                    Add
+                  </motion.button>
                 </div>
                 <div className="flex gap-1.5">
                   <motion.button
