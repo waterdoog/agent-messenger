@@ -295,7 +295,7 @@ const Index = () => {
 
         {showingPanel && (
           <span className="text-xs font-medium text-foreground capitalize">
-            {openNote ? "Note" : panel}
+            {openNote ? "Note" : openFolderId ? sampleFolders.find(f => f.id === openFolderId)?.name || "Files" : panel}
           </span>
         )}
 
