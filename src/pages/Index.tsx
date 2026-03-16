@@ -55,6 +55,7 @@ const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [connectedIntegrations, setConnectedIntegrations] = useState<Set<string>>(new Set());
+  const [openFolderId, setOpenFolderId] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Real recording refs
