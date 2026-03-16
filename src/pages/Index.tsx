@@ -51,7 +51,7 @@ const Index = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     { id: "0", from: "agent", text: "Hey! I'm your courier agent. What do you need?" },
   ]);
-  const [panel, setPanel] = useState<"chat" | "files" | "integrations" | "notes">("chat");
+  const [panel, setPanel] = useState<"chat" | "files" | "states">("chat");
   const [isRecording, setIsRecording] = useState(false);
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [connectedIntegrations, setConnectedIntegrations] = useState<Set<string>>(new Set());
