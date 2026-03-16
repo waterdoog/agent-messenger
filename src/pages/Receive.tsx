@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, FileText, Send, FolderOpen } from "lucide-react";
+import { Calendar, FileText, Send, FolderOpen, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import AgentCharacter from "@/components/AgentCharacter";
 import { sampleMeetingNotes } from "@/data/sampleNotes";
