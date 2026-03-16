@@ -23,10 +23,7 @@ const Index = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dispatching, setDispatching] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
-  const [notes, setNotes] = useState<Note[]>([
-    { id: "1", duration: 912, timestamp: new Date(Date.now() - 86400000 * 2) },
-    { id: "2", duration: 340, timestamp: new Date(Date.now() - 86400000) },
-  ]);
+  const [notes, setNotes] = useState<MeetingNote[]>(sampleMeetingNotes);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     { id: "0", from: "agent", text: "Hey! I'm your courier agent. What do you need?" },
   ]);
