@@ -86,6 +86,10 @@
 
 @layer utilities {
   .ring-subtle {
+    @apply ring-1 ring-black/[0.06];
+  }
+
+  :root .ring-subtle {
     @apply ring-1 ring-white/[0.06];
   }
 
