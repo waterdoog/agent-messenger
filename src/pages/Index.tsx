@@ -455,6 +455,23 @@ const Index = () => {
               transition={{ duration: 0.15 }}
             >
               <div className="space-y-2">
+                {/* Meeting Notes folder */}
+                <motion.button
+                  onClick={() => setOpenFolderId("meeting-notes")}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-secondary/40 ring-subtle text-left hover:bg-secondary/60 transition-colors"
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0 text-sm">
+                    🎙️
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-foreground">Meeting Notes</p>
+                    <p className="text-[10px] text-muted-foreground">{notes.length} notes</p>
+                  </div>
+                  <ChevronRight size={14} className="text-muted-foreground/30" />
+                </motion.button>
+
+                {/* Regular folders */}
                 {sampleFolders.map((folder) => (
                   <motion.button
                     key={folder.id}
