@@ -208,16 +208,6 @@ const Receive = () => {
                 <div className="flex gap-1.5">
                   <motion.button
                     whileTap={{ scale: 0.92 }}
-                    onClick={() => setShowPanel(showPanel === "notes" ? null : "notes")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
-                      showPanel === "notes" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
-                    }`}
-                  >
-                    <FileText size={12} />
-                    Notes
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.92 }}
                     onClick={() => setShowPanel(showPanel === "files" ? null : "files")}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
                       showPanel === "files" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
@@ -225,6 +215,16 @@ const Receive = () => {
                   >
                     <FolderOpen size={12} />
                     Files
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => setShowPanel(showPanel === "calendar" ? null : "calendar")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
+                      showPanel === "calendar" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
+                    }`}
+                  >
+                    <Calendar size={12} />
+                    Calendar
                   </motion.button>
                 </div>
               </div>
