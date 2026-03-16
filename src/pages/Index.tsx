@@ -260,7 +260,13 @@ const Index = () => {
                           : "bg-secondary/60 text-foreground rounded-2xl rounded-bl-md"
                       }`}
                     >
-                      {msg.text}
+                      {msg.from === "agent" ? (
+                        <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
+                          <ReactMarkdown>{msg.text}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        msg.text
+                      )}
                     </div>
                   </motion.div>
                 ))}
