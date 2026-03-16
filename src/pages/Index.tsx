@@ -329,16 +329,9 @@ const Index = () => {
                 <div>
                   <h1 className="text-sm font-semibold text-foreground tracking-tight">Courier</h1>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    {notes.length} note{notes.length !== 1 ? "s" : ""} saved
+                    {notes.length} note{notes.length !== 1 ? "s" : ""} · {sampleFolders.length} folders
                   </p>
                 </div>
-                <button
-                  onClick={() => setPanel("notes")}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04] transition-colors"
-                >
-                  <FileText size={12} />
-                  Notes
-                </button>
               </div>
 
               {/* Chat messages */}
