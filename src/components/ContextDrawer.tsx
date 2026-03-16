@@ -12,7 +12,7 @@ interface ContextDrawerProps {
 }
 
 const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) => {
-  const [expandedSection, setExpandedSection] = useState<string | null>("notes");
+  const [expandedSection, setExpandedSection] = useState<string | null>("files");
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
   const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
   const [selectedCalPerm, setSelectedCalPerm] = useState<string | null>(null);
