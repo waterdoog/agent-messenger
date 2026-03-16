@@ -152,19 +152,109 @@ export const sampleMeetingNotes: MeetingNote[] = [
   },
 ];
 
+export interface FileItem {
+  id: string;
+  name: string;
+  type: "pdf" | "doc" | "sheet" | "image" | "figma" | "slide" | "md" | "link";
+  size: string;
+  updatedAt: Date;
+}
+
 export interface FolderItem {
   id: string;
   name: string;
-  fileCount: number;
   icon: string;
+  files: FileItem[];
 }
 
 export const sampleFolders: FolderItem[] = [
-  { id: "folder-1", name: "Product Specs", fileCount: 8, icon: "📁" },
-  { id: "folder-2", name: "Design Assets", fileCount: 14, icon: "🎨" },
-  { id: "folder-3", name: "Engineering Docs", fileCount: 6, icon: "⚙️" },
-  { id: "folder-4", name: "Client Materials", fileCount: 3, icon: "🤝" },
-  { id: "folder-5", name: "Team Wiki", fileCount: 21, icon: "📖" },
+  {
+    id: "folder-1",
+    name: "Product Specs",
+    icon: "📁",
+    files: [
+      { id: "f1-1", name: "Q1 Product Roadmap.pdf", type: "pdf", size: "2.4 MB", updatedAt: new Date(Date.now() - 86400000 * 1) },
+      { id: "f1-2", name: "Feature Prioritization Matrix.sheet", type: "sheet", size: "340 KB", updatedAt: new Date(Date.now() - 86400000 * 2) },
+      { id: "f1-3", name: "User Onboarding PRD.doc", type: "doc", size: "1.1 MB", updatedAt: new Date(Date.now() - 86400000 * 3) },
+      { id: "f1-4", name: "API v2 Spec.md", type: "md", size: "86 KB", updatedAt: new Date(Date.now() - 86400000 * 4) },
+      { id: "f1-5", name: "Analytics Dashboard Requirements.doc", type: "doc", size: "920 KB", updatedAt: new Date(Date.now() - 86400000 * 5) },
+      { id: "f1-6", name: "Competitive Analysis.pdf", type: "pdf", size: "4.7 MB", updatedAt: new Date(Date.now() - 86400000 * 7) },
+      { id: "f1-7", name: "Beta Launch Plan.slide", type: "slide", size: "3.2 MB", updatedAt: new Date(Date.now() - 86400000 * 8) },
+      { id: "f1-8", name: "User Personas.pdf", type: "pdf", size: "1.8 MB", updatedAt: new Date(Date.now() - 86400000 * 10) },
+    ],
+  },
+  {
+    id: "folder-2",
+    name: "Design Assets",
+    icon: "🎨",
+    files: [
+      { id: "f2-1", name: "Onboarding Flow v3.figma", type: "figma", size: "—", updatedAt: new Date(Date.now() - 86400000 * 1) },
+      { id: "f2-2", name: "Design System Components.figma", type: "figma", size: "—", updatedAt: new Date(Date.now() - 86400000 * 2) },
+      { id: "f2-3", name: "Mobile Wireframes.figma", type: "figma", size: "—", updatedAt: new Date(Date.now() - 86400000 * 3) },
+      { id: "f2-4", name: "Icon Set Export.zip", type: "image", size: "12.3 MB", updatedAt: new Date(Date.now() - 86400000 * 4) },
+      { id: "f2-5", name: "Brand Guidelines.pdf", type: "pdf", size: "6.1 MB", updatedAt: new Date(Date.now() - 86400000 * 5) },
+      { id: "f2-6", name: "Color Palette.png", type: "image", size: "240 KB", updatedAt: new Date(Date.now() - 86400000 * 6) },
+      { id: "f2-7", name: "Landing Page Mockup.figma", type: "figma", size: "—", updatedAt: new Date(Date.now() - 86400000 * 7) },
+      { id: "f2-8", name: "Dashboard Concepts.pdf", type: "pdf", size: "3.4 MB", updatedAt: new Date(Date.now() - 86400000 * 8) },
+      { id: "f2-9", name: "Typography Scale.png", type: "image", size: "180 KB", updatedAt: new Date(Date.now() - 86400000 * 9) },
+      { id: "f2-10", name: "Animation Specs.md", type: "md", size: "42 KB", updatedAt: new Date(Date.now() - 86400000 * 10) },
+      { id: "f2-11", name: "User Flow Diagrams.figma", type: "figma", size: "—", updatedAt: new Date(Date.now() - 86400000 * 11) },
+      { id: "f2-12", name: "App Store Screenshots.zip", type: "image", size: "8.7 MB", updatedAt: new Date(Date.now() - 86400000 * 12) },
+      { id: "f2-13", name: "Error State Illustrations.svg", type: "image", size: "320 KB", updatedAt: new Date(Date.now() - 86400000 * 13) },
+      { id: "f2-14", name: "Loading Animations.json", type: "md", size: "56 KB", updatedAt: new Date(Date.now() - 86400000 * 14) },
+    ],
+  },
+  {
+    id: "folder-3",
+    name: "Engineering Docs",
+    icon: "⚙️",
+    files: [
+      { id: "f3-1", name: "System Architecture Overview.md", type: "md", size: "124 KB", updatedAt: new Date(Date.now() - 86400000 * 2) },
+      { id: "f3-2", name: "Database Schema v2.pdf", type: "pdf", size: "890 KB", updatedAt: new Date(Date.now() - 86400000 * 3) },
+      { id: "f3-3", name: "API Endpoints Reference.md", type: "md", size: "210 KB", updatedAt: new Date(Date.now() - 86400000 * 5) },
+      { id: "f3-4", name: "CI/CD Pipeline Guide.doc", type: "doc", size: "560 KB", updatedAt: new Date(Date.now() - 86400000 * 8) },
+      { id: "f3-5", name: "Security Audit Report.pdf", type: "pdf", size: "1.5 MB", updatedAt: new Date(Date.now() - 86400000 * 10) },
+      { id: "f3-6", name: "Performance Benchmarks.sheet", type: "sheet", size: "420 KB", updatedAt: new Date(Date.now() - 86400000 * 12) },
+    ],
+  },
+  {
+    id: "folder-4",
+    name: "Client Materials",
+    icon: "🤝",
+    files: [
+      { id: "f4-1", name: "Acme Corp — Integration Proposal.pdf", type: "pdf", size: "2.1 MB", updatedAt: new Date(Date.now() - 86400000 * 3) },
+      { id: "f4-2", name: "Webhook Spec Draft.doc", type: "doc", size: "780 KB", updatedAt: new Date(Date.now() - 86400000 * 5) },
+      { id: "f4-3", name: "SSO Implementation Timeline.sheet", type: "sheet", size: "210 KB", updatedAt: new Date(Date.now() - 86400000 * 7) },
+    ],
+  },
+  {
+    id: "folder-5",
+    name: "Team Wiki",
+    icon: "📖",
+    files: [
+      { id: "f5-1", name: "Onboarding Checklist.md", type: "md", size: "34 KB", updatedAt: new Date(Date.now() - 86400000 * 1) },
+      { id: "f5-2", name: "Team Directory.sheet", type: "sheet", size: "120 KB", updatedAt: new Date(Date.now() - 86400000 * 2) },
+      { id: "f5-3", name: "Code Review Guidelines.md", type: "md", size: "56 KB", updatedAt: new Date(Date.now() - 86400000 * 4) },
+      { id: "f5-4", name: "Sprint Planning Process.doc", type: "doc", size: "340 KB", updatedAt: new Date(Date.now() - 86400000 * 6) },
+      { id: "f5-5", name: "Engineering Values.md", type: "md", size: "28 KB", updatedAt: new Date(Date.now() - 86400000 * 8) },
+      { id: "f5-6", name: "Meeting Cadence.md", type: "md", size: "18 KB", updatedAt: new Date(Date.now() - 86400000 * 9) },
+      { id: "f5-7", name: "Tool Stack Overview.md", type: "md", size: "42 KB", updatedAt: new Date(Date.now() - 86400000 * 10) },
+      { id: "f5-8", name: "Incident Response Playbook.pdf", type: "pdf", size: "1.2 MB", updatedAt: new Date(Date.now() - 86400000 * 11) },
+      { id: "f5-9", name: "Vacation Policy.doc", type: "doc", size: "180 KB", updatedAt: new Date(Date.now() - 86400000 * 12) },
+      { id: "f5-10", name: "Remote Work Guidelines.md", type: "md", size: "24 KB", updatedAt: new Date(Date.now() - 86400000 * 13) },
+      { id: "f5-11", name: "Knowledge Sharing Sessions.sheet", type: "sheet", size: "90 KB", updatedAt: new Date(Date.now() - 86400000 * 14) },
+      { id: "f5-12", name: "Feedback Templates.doc", type: "doc", size: "210 KB", updatedAt: new Date(Date.now() - 86400000 * 15) },
+      { id: "f5-13", name: "Architecture Decision Records.md", type: "md", size: "156 KB", updatedAt: new Date(Date.now() - 86400000 * 16) },
+      { id: "f5-14", name: "Release Process.md", type: "md", size: "38 KB", updatedAt: new Date(Date.now() - 86400000 * 17) },
+      { id: "f5-15", name: "Design Review Checklist.md", type: "md", size: "22 KB", updatedAt: new Date(Date.now() - 86400000 * 18) },
+      { id: "f5-16", name: "Slack Channel Guide.md", type: "md", size: "16 KB", updatedAt: new Date(Date.now() - 86400000 * 19) },
+      { id: "f5-17", name: "OKR Templates.sheet", type: "sheet", size: "140 KB", updatedAt: new Date(Date.now() - 86400000 * 20) },
+      { id: "f5-18", name: "Interview Rubric.doc", type: "doc", size: "280 KB", updatedAt: new Date(Date.now() - 86400000 * 21) },
+      { id: "f5-19", name: "Tech Talks Schedule.sheet", type: "sheet", size: "78 KB", updatedAt: new Date(Date.now() - 86400000 * 22) },
+      { id: "f5-20", name: "Retrospective Notes Archive.pdf", type: "pdf", size: "3.8 MB", updatedAt: new Date(Date.now() - 86400000 * 23) },
+      { id: "f5-21", name: "New Hire Welcome Pack.pdf", type: "pdf", size: "5.2 MB", updatedAt: new Date(Date.now() - 86400000 * 24) },
+    ],
+  },
 ];
 
 export interface CalendarPermission {

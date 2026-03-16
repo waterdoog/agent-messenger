@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, X, Clock, Users, Tag, CheckSquare } from "lucide-react";
-import { sampleMeetingNotes, MeetingNote } from "@/data/sampleNotes";
+import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, Clock, Users, Tag, CheckSquare, File, Image, Table, Presentation, Code, Link2, ChevronRight } from "lucide-react";
+import { sampleMeetingNotes, sampleFolders, MeetingNote, FolderItem } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import RecordButton from "@/components/RecordButton";
@@ -55,6 +55,7 @@ const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [connectedIntegrations, setConnectedIntegrations] = useState<Set<string>>(new Set());
+  const [openFolderId, setOpenFolderId] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Real recording refs
@@ -266,7 +267,7 @@ const Index = () => {
         <div className="flex items-center gap-1">
           {showingPanel ? (
             <button
-              onClick={() => { setPanel("chat"); setOpenNoteId(null); }}
+              onClick={() => { setPanel("chat"); setOpenNoteId(null); setOpenFolderId(null); }}
               className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronLeft size={14} />
@@ -294,7 +295,7 @@ const Index = () => {
 
         {showingPanel && (
           <span className="text-xs font-medium text-foreground capitalize">
-            {openNote ? "Note" : panel}
+            {openNote ? "Note" : openFolderId ? sampleFolders.find(f => f.id === openFolderId)?.name || "Files" : panel}
           </span>
         )}
 
@@ -599,25 +600,102 @@ const Index = () => {
             </motion.div>
           )}
 
-          {/* === Files Panel === */}
-          {panel === "files" && (
+          {/* === Files Panel — Folder List === */}
+          {panel === "files" && !openFolderId && (
             <motion.div
               key="files"
-              className="flex-1 flex items-center justify-center px-6"
+              className="flex-1 overflow-auto scrollbar-none px-5 pt-4 pb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
             >
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-2xl bg-foreground/[0.04] flex items-center justify-center mx-auto mb-3">
-                  <FolderOpen size={20} className="text-muted-foreground/40" />
-                </div>
-                <p className="text-xs text-muted-foreground/60">No files yet</p>
-                <p className="text-[10px] text-muted-foreground/30 mt-1">Attach files for your agent to carry</p>
+              <div className="space-y-2">
+                {sampleFolders.map((folder) => (
+                  <motion.button
+                    key={folder.id}
+                    onClick={() => setOpenFolderId(folder.id)}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-secondary/40 ring-subtle text-left hover:bg-secondary/60 transition-colors"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0 text-sm">
+                      {folder.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground">{folder.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{folder.files.length} files</p>
+                    </div>
+                    <ChevronRight size={14} className="text-muted-foreground/30" />
+                  </motion.button>
+                ))}
               </div>
             </motion.div>
           )}
+
+          {/* === Files Panel — Folder Contents === */}
+          {panel === "files" && openFolderId && (() => {
+            const folder = sampleFolders.find((f) => f.id === openFolderId);
+            if (!folder) return null;
+
+            const fileIcon = (type: string) => {
+              switch (type) {
+                case "pdf": return <FileText size={13} className="text-red-400" />;
+                case "doc": return <FileText size={13} className="text-blue-400" />;
+                case "sheet": return <Table size={13} className="text-green-400" />;
+                case "image": return <Image size={13} className="text-purple-400" />;
+                case "figma": return <Presentation size={13} className="text-pink-400" />;
+                case "slide": return <Presentation size={13} className="text-orange-400" />;
+                case "md": return <Code size={13} className="text-muted-foreground" />;
+                case "link": return <Link2 size={13} className="text-cyan-400" />;
+                default: return <File size={13} className="text-muted-foreground" />;
+              }
+            };
+
+            return (
+              <motion.div
+                key={`folder-${folder.id}`}
+                className="flex-1 flex flex-col min-h-0"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="px-5 pt-4 pb-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm">{folder.icon}</span>
+                    <h2 className="text-sm font-semibold text-foreground">{folder.name}</h2>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">{folder.files.length} files</p>
+                </div>
+                <div className="flex-1 overflow-auto scrollbar-none px-5 pb-4">
+                  <div className="space-y-1">
+                    {folder.files.map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl hover:bg-secondary/40 transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-foreground/[0.06] flex items-center justify-center flex-shrink-0">
+                          {fileIcon(file.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-medium text-foreground truncate">{file.name}</p>
+                          <p className="text-[9px] text-muted-foreground/50">{file.size} · {formatDate(file.updatedAt)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex-shrink-0 px-5 pb-8 pt-3">
+                  <button
+                    onClick={() => setOpenFolderId(null)}
+                    className="w-full py-3 rounded-2xl bg-secondary/40 ring-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    ← Back to Folders
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })()}
 
           {/* === Integrations Panel === */}
           {panel === "integrations" && (

@@ -225,7 +225,7 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
                                 <p className={`text-xs font-medium ${selected ? "text-foreground" : "text-muted-foreground"}`}>
                                   {folder.name}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground/60">{folder.fileCount} files</p>
+                                <p className="text-[10px] text-muted-foreground/60">{folder.files.length} files</p>
                               </div>
                             </motion.button>
                           );
