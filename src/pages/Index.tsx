@@ -2,9 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic } from "lucide-react";
 import { sampleMeetingNotes, MeetingNote } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 import RecordButton from "@/components/RecordButton";
 import ContextDrawer from "@/components/ContextDrawer";
 import AgentDispatchAnimation from "@/components/AgentDispatchAnimation";
+
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
 
 interface ChatMessage {
@@ -18,6 +21,7 @@ const Index = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dispatching, setDispatching] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [notes, setNotes] = useState<MeetingNote[]>(sampleMeetingNotes);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     { id: "0", from: "agent", text: "Hey! I'm your courier agent. What do you need?" },
@@ -58,21 +62,79 @@ const Index = () => {
     setInputText("");
   };
 
-  const handleChatSend = () => {
-    if (!inputText.trim()) return;
+  const handleChatSend = async () => {
+    if (!inputText.trim() || isAiLoading) return;
     const userMsg: ChatMessage = { id: Date.now().toString(), from: "user", text: inputText };
     setChatMessages((prev) => [...prev, userMsg]);
     setInputText("");
-    setTimeout(() => {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          from: "agent",
-          text: "Got it, I'll take care of that for you.",
+    setIsAiLoading(true);
+
+    // Build conversation history for AI
+    const allMsgs = [...chatMessages, userMsg].map((m) => ({
+      role: m.from === "user" ? "user" as const : "assistant" as const,
+      content: m.text,
+    }));
+
+    const senderContext = `You are Courier, a helpful AI agent on the sender side. You help the user prepare what to send — organize meeting notes, pick files, and set up calendar permissions. You have access to ${notes.length} meeting notes. Be concise and helpful. Answer in the same language as the user.`;
+
+    let assistantSoFar = "";
+    const upsert = (chunk: string) => {
+      assistantSoFar += chunk;
+      setChatMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.from === "agent") {
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, text: assistantSoFar } : m));
+        }
+        return [...prev, { id: (Date.now() + 1).toString(), from: "agent", text: assistantSoFar }];
+      });
+    };
+
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-      ]);
-    }, 800);
+        body: JSON.stringify({ messages: allMsgs, context: senderContext }),
+      });
+
+      if (!resp.ok || !resp.body) {
+        const data = await resp.json().catch(() => ({}));
+        upsert(`⚠️ ${data.error || "Something went wrong"}`);
+        setIsAiLoading(false);
+        return;
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      let done = false;
+
+      while (!done) {
+        const { done: rd, value } = await reader.read();
+        if (rd) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buf.indexOf("\n")) !== -1) {
+          let line = buf.slice(0, idx);
+          buf = buf.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const json = line.slice(6).trim();
+          if (json === "[DONE]") { done = true; break; }
+          try {
+            const p = JSON.parse(json);
+            const c = p.choices?.[0]?.delta?.content;
+            if (c) upsert(c);
+          } catch { buf = line + "\n" + buf; break; }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      upsert("⚠️ Connection error");
+    }
+    setIsAiLoading(false);
   };
 
   const formatDuration = (s: number) => {
@@ -198,10 +260,25 @@ const Index = () => {
                           : "bg-secondary/60 text-foreground rounded-2xl rounded-bl-md"
                       }`}
                     >
-                      {msg.text}
+                      {msg.from === "agent" ? (
+                        <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
+                          <ReactMarkdown>{msg.text}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        msg.text
+                      )}
                     </div>
                   </motion.div>
                 ))}
+                {isAiLoading && chatMessages[chatMessages.length - 1]?.from !== "agent" && (
+                  <motion.div className="flex justify-start" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <div className="bg-secondary/60 rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
+                      <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} />
+                      <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }} />
+                      <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }} />
+                    </div>
+                  </motion.div>
+                )}
                 <div ref={chatEndRef} />
               </div>
 
