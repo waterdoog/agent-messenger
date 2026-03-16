@@ -138,6 +138,52 @@ const sampleContacts: Contact[] = [
   },
 ];
 
+// Pre-populated chat messages for non-Courier contacts
+const contactMessages: Record<string, ChatMessage[]> = {
+  "carol": [
+    { id: "c1", from: "agent", text: "Hey, can we sync on the roadmap later today?" },
+    { id: "c2", from: "user", text: "Sure! How about 3pm?" },
+    { id: "c3", from: "agent", text: "Works for me. I'll send a calendar invite 👍" },
+  ],
+  "carol-agent": [
+    { id: "ca1", from: "agent", text: "Hi! I'm Dash, Carol's agent. She asked me to share some context with you." },
+    { id: "ca2", from: "agent", text: "📋 Carol shared **Q1 Roadmap Planning** notes with you. Here's a quick summary:\n\n- Onboarding revamp (#1), API v2 (#2), Analytics dashboard (#3)\n- Sarah leads design, Mike owns backend\n- Beta target: March 28" },
+    { id: "ca3", from: "agent", text: "There are **3 action items** pending your review. Want me to list them?" },
+  ],
+  "eason": [
+    { id: "e1", from: "agent", text: "Let me know when you're free to chat about the API" },
+    { id: "e2", from: "user", text: "How about tomorrow afternoon?" },
+    { id: "e3", from: "agent", text: "Let me check... I'll have Bolt coordinate with your calendar." },
+  ],
+  "eason-agent": [
+    { id: "ea1", from: "agent", text: "Hey! I'm Bolt, Eason's agent. 👋" },
+    { id: "ea2", from: "agent", text: "📅 Eason has 3 available slots this week:\n\n- **Tue 10:00 AM** - 30 min\n- **Wed 2:00 PM** - 45 min\n- **Thu 11:00 AM** - 30 min\n\nWant me to book one for you?" },
+    { id: "ea3", from: "user", text: "Wed 2pm works!" },
+    { id: "ea4", from: "agent", text: "✅ Done! Booked **Wed 2:00 PM** for 45 min. I've sent calendar invites to both of you. Eason will get a notification." },
+  ],
+  "lina": [
+    { id: "l1", from: "agent", text: "Can you send me the design specs?" },
+    { id: "l2", from: "user", text: "Sure, I'll have my agent deliver them to you" },
+    { id: "l3", from: "agent", text: "Perfect, thanks! 🙏" },
+  ],
+  "lina-agent": [
+    { id: "la1", from: "agent", text: "Hi, I'm Nova, Lina's agent." },
+    { id: "la2", from: "agent", text: "✅ Design specs delivered successfully. Lina confirmed receipt." },
+    { id: "la3", from: "agent", text: "She left a comment: \"Looks great! I especially like the onboarding flow. One question — is the color palette finalized?\"" },
+    { id: "la4", from: "agent", text: "Want me to relay a response back to Lina?" },
+  ],
+  "alex": [
+    { id: "a1", from: "agent", text: "The API docs are updated, take a look." },
+    { id: "a2", from: "user", text: "Thanks! I'll review them today" },
+    { id: "a3", from: "agent", text: "Cool. Also the migration guide is in the shared folder if you need it." },
+  ],
+  "alex-agent": [
+    { id: "aa1", from: "agent", text: "Hey there! I'm Relay, Alex's agent. 📎" },
+    { id: "aa2", from: "agent", text: "Alex shared 2 files with you:\n\n1. **API v2 Specification** (12 pages)\n2. **Migration Guide** (8 pages)\n\nBoth are read-only access." },
+    { id: "aa3", from: "agent", text: "Alex also mentioned: breaking changes in v2 need a migration guide review before March 20. Want me to set a reminder?" },
+  ],
+};
+
 const integrations: Integration[] = [
   { name: "Google Calendar", icon: "📅", connected: false, category: "Calendar" },
   { name: "Notion", icon: "📝", connected: false, category: "Docs" },
