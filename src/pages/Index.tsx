@@ -445,7 +445,7 @@ const Index = () => {
           {/* === Notes Panel === */}
 
           {/* === Files Panel — Folder List === */}
-          {panel === "files" && !openFolderId && (
+          {panel === "files" && !openFolderId && !openNoteId && (
             <motion.div
               key="files"
               className="flex-1 overflow-auto scrollbar-none px-5 pt-4 pb-8"
