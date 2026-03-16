@@ -493,10 +493,124 @@ const Index = () => {
             </motion.div>
           )}
 
-          {/* === Files Panel — Folder Contents === */}
-          {panel === "files" && openFolderId && (() => {
+          {/* === Files Panel — Meeting Notes List === */}
+          {panel === "files" && openFolderId === "meeting-notes" && !openNoteId && (
+            <motion.div
+              key="meeting-notes"
+              className="flex-1 flex flex-col min-h-0"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="px-5 pt-4 pb-2 flex-shrink-0 flex items-center gap-2">
+                <span className="text-sm">🎙️</span>
+                <h2 className="text-sm font-semibold text-foreground">Meeting Notes</h2>
+                <span className="text-[10px] text-muted-foreground ml-1">{notes.length}</span>
+              </div>
+              <div className="flex-1 overflow-auto scrollbar-none px-5 pb-4">
+                <div className="space-y-1.5">
+                  {notes.map((note) => (
+                    <motion.button
+                      key={note.id}
+                      onClick={() => setOpenNoteId(note.id)}
+                      className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left hover:bg-secondary/40 transition-colors"
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-foreground/[0.06] flex items-center justify-center flex-shrink-0">
+                        <FileText size={13} className="text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-medium text-foreground truncate">{note.title}</p>
+                        <p className="text-[9px] text-muted-foreground/50">
+                          {formatDate(note.timestamp)} · {formatDuration(note.duration)} · {note.attendees.length} people
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setNotes((prev) => prev.filter((n) => n.id !== note.id)); }}
+                        className="text-muted-foreground/20 hover:text-muted-foreground transition-colors p-1"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex-shrink-0 px-5 pb-8 pt-3">
+                <button
+                  onClick={() => setOpenFolderId(null)}
+                  className="w-full py-3 rounded-2xl bg-secondary/40 ring-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ← Back to Files
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* === Files Panel — Note Detail === */}
+          {panel === "files" && openNoteId && (() => {
+            const note = notes.find((n) => n.id === openNoteId);
+            if (!note) return null;
+            return (
+              <motion.div
+                key={`note-${note.id}`}
+                className="flex-1 flex flex-col min-h-0"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="flex-1 overflow-auto scrollbar-none px-5 pt-4 pb-8">
+                  <h2 className="text-base font-semibold text-foreground tracking-tight">{note.title}</h2>
+                  <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+                    <span className="flex items-center gap-1"><Clock size={10} />{formatDate(note.timestamp)} · {formatDuration(note.duration)}</span>
+                    <span className="flex items-center gap-1"><Users size={10} />{note.attendees.length || "—"}</span>
+                  </div>
+                  {note.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {note.tags.map((tag) => (
+                        <span key={tag} className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground"><Tag size={8} />{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="mt-5">
+                    <h3 className="text-xs font-semibold text-foreground mb-2">Summary</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{note.summary}</p>
+                  </div>
+                  {note.attendees.length > 0 && (
+                    <div className="mt-5">
+                      <h3 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5"><Users size={12} />Attendees</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {note.attendees.map((a) => (<span key={a} className="px-2.5 py-1 rounded-xl bg-secondary/60 ring-subtle text-xs text-foreground">{a}</span>))}
+                      </div>
+                    </div>
+                  )}
+                  {note.actionItems.length > 0 && (
+                    <div className="mt-5">
+                      <h3 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5"><CheckSquare size={12} />Action Items</h3>
+                      <div className="space-y-2">
+                        {note.actionItems.map((item, i) => (
+                          <div key={i} className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/30">
+                            <div className="w-4 h-4 mt-0.5 rounded border border-foreground/15 flex-shrink-0" />
+                            <p className="text-xs text-foreground/80 leading-relaxed">{item}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-shrink-0 px-5 pb-8 pt-3">
+                  <button onClick={() => setOpenNoteId(null)} className="w-full py-3 rounded-2xl bg-secondary/40 ring-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    ← Back
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })()}
+
+          {/* === Files Panel — Regular Folder Contents === */}
+          {panel === "files" && openFolderId && openFolderId !== "meeting-notes" && !openNoteId && (() => {
             const folder = sampleFolders.find((f) => f.id === openFolderId);
-            if (!folder) return null;
 
             const fileIcon = (type: string) => {
               switch (type) {
