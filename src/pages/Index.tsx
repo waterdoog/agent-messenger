@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, Clock, Users, Tag, CheckSquare, File, Image, Table, Presentation, Code, Link2, ChevronRight } from "lucide-react";
+import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, Clock, Users, Tag, CheckSquare, File, Image, Table, Presentation, Code, Link2, ChevronRight, Search } from "lucide-react";
 import { sampleMeetingNotes, sampleFolders, MeetingNote, FolderItem } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -22,6 +22,97 @@ interface Integration {
   category: string;
 }
 
+interface Contact {
+  id: string;
+  name: string;
+  avatar: string; // emoji or initials
+  avatarBg?: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  unread: number;
+  isPinned: boolean;
+  isAgent: boolean;
+  isOnline?: boolean;
+}
+
+const sampleContacts: Contact[] = [
+  {
+    id: "courier",
+    name: "Courier",
+    avatar: "⚡",
+    lastMessage: "Hey! I'm your courier agent. What do you need?",
+    lastMessageTime: "Now",
+    unread: 1,
+    isPinned: true,
+    isAgent: true,
+    isOnline: true,
+  },
+  {
+    id: "carol",
+    name: "Carol MA",
+    avatar: "🐴",
+    avatarBg: "bg-amber-800",
+    lastMessage: "Start a conversation",
+    lastMessageTime: "",
+    unread: 0,
+    isPinned: false,
+    isAgent: false,
+  },
+  {
+    id: "eason",
+    name: "Eason W",
+    avatar: "E",
+    avatarBg: "bg-cyan-500",
+    lastMessage: "hi",
+    lastMessageTime: "Mar 8",
+    unread: 0,
+    isPinned: false,
+    isAgent: false,
+  },
+  {
+    id: "eason-agent",
+    name: "Eason W (Agent)",
+    avatar: "⚡",
+    lastMessage: "I'll check the availability and get back to you.",
+    lastMessageTime: "Tue",
+    unread: 0,
+    isPinned: false,
+    isAgent: true,
+  },
+  {
+    id: "lina",
+    name: "Lina Chen",
+    avatar: "L",
+    avatarBg: "bg-violet-500",
+    lastMessage: "Can you send me the design specs?",
+    lastMessageTime: "Mon",
+    unread: 0,
+    isPinned: false,
+    isAgent: false,
+  },
+  {
+    id: "lina-agent",
+    name: "Lina Chen (Agent)",
+    avatar: "⚡",
+    lastMessage: "Here are Lina's available slots for this week...",
+    lastMessageTime: "Mon",
+    unread: 0,
+    isPinned: false,
+    isAgent: true,
+  },
+  {
+    id: "alex",
+    name: "Alex Rivera",
+    avatar: "A",
+    avatarBg: "bg-emerald-600",
+    lastMessage: "The API docs are updated, take a look.",
+    lastMessageTime: "Mar 12",
+    unread: 0,
+    isPinned: false,
+    isAgent: false,
+  },
+];
+
 const integrations: Integration[] = [
   { name: "Google Calendar", icon: "📅", connected: false, category: "Calendar" },
   { name: "Notion", icon: "📝", connected: false, category: "Docs" },
@@ -42,6 +133,9 @@ const integrations: Integration[] = [
 ];
 
 const Index = () => {
+  const [view, setView] = useState<"contacts" | "chat">("contacts");
+  const [activeContactId, setActiveContactId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [inputText, setInputText] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dispatching, setDispatching] = useState(false);
@@ -58,7 +152,6 @@ const Index = () => {
   const [openFolderId, setOpenFolderId] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Real recording refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recordingStartRef = useRef<number>(0);
@@ -72,6 +165,22 @@ const Index = () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
+
+  const openContact = (contactId: string) => {
+    setActiveContactId(contactId);
+    setView("chat");
+    setPanel("chat");
+    setOpenNoteId(null);
+    setOpenFolderId(null);
+  };
+
+  const goBackToContacts = () => {
+    setView("contacts");
+    setActiveContactId(null);
+    setPanel("chat");
+    setOpenNoteId(null);
+    setOpenFolderId(null);
+  };
 
   const startMicRecording = useCallback(async () => {
     try {
@@ -112,28 +221,8 @@ const Index = () => {
   }, []);
 
   const toggleMicRecording = () => {
-    if (isRecording) {
-      stopMicRecording();
-    } else {
-      startMicRecording();
-    }
-  };
-
-  const handleRecordingComplete = (duration: number) => {
-    setHasRecording(true);
-    setNotes((prev) => [
-      {
-        id: Date.now().toString(),
-        title: "New Recording",
-        summary: "Recording captured — tap to add notes or let AI transcribe.",
-        duration,
-        timestamp: new Date(),
-        attendees: [],
-        actionItems: [],
-        tags: ["recording"],
-      },
-      ...prev,
-    ]);
+    if (isRecording) stopMicRecording();
+    else startMicRecording();
   };
 
   const handleSend = (_contexts: string[]) => {
@@ -155,7 +244,7 @@ const Index = () => {
     setIsAiLoading(true);
 
     const allMsgs = [...chatMessages, userMsg].map((m) => ({
-      role: m.from === "user" ? "user" as const : "assistant" as const,
+      role: m.from === "user" ? ("user" as const) : ("assistant" as const),
       content: m.text,
     }));
 
@@ -244,17 +333,135 @@ const Index = () => {
   };
 
   const showingPanel = panel !== "chat";
-  
 
-  // Group integrations by category
   const groupedIntegrations = integrations.reduce<Record<string, Integration[]>>((acc, item) => {
     (acc[item.category] = acc[item.category] || []).push(item);
     return acc;
   }, {});
 
+  const activeContact = sampleContacts.find((c) => c.id === activeContactId);
+  const isCourierChat = activeContactId === "courier";
+
+  const pinnedContacts = sampleContacts.filter((c) => c.isPinned);
+  const allContacts = sampleContacts.filter((c) => !c.isPinned);
+  const filteredPinned = pinnedContacts.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredAll = allContacts.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  // ========== CONTACTS LIST VIEW ==========
+  if (view === "contacts") {
+    return (
+      <div className="fixed inset-0 bg-background flex flex-col">
+        <div className="h-10 flex-shrink-0" />
+
+        <div className="px-5 pt-2 pb-3 flex-shrink-0">
+          <h1 className="text-xl font-bold text-foreground tracking-tight">Chats</h1>
+        </div>
+
+        {/* Search */}
+        <div className="px-5 pb-3 flex-shrink-0">
+          <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-secondary/50 ring-subtle">
+            <Search size={14} className="text-muted-foreground/50 flex-shrink-0" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search contacts..."
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/40 outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-auto scrollbar-none px-5">
+          {/* PINNED */}
+          {filteredPinned.length > 0 && (
+            <div className="mb-4">
+              <p className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider mb-2 px-1">
+                Pinned
+              </p>
+              <div className="space-y-1">
+                {filteredPinned.map((contact) => (
+                  <motion.button
+                    key={contact.id}
+                    onClick={() => openContact(contact.id)}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/[0.06] ring-1 ring-primary/10 text-left hover:bg-primary/[0.1] transition-colors"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="relative flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-secondary/80 flex items-center justify-center text-base">
+                        {contact.avatar}
+                      </div>
+                      {contact.isOnline && (
+                        <div className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full bg-green-500 ring-2 ring-background" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-primary truncate">{contact.name}</p>
+                        <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">{contact.lastMessageTime}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{contact.lastMessage}</p>
+                    </div>
+                    {contact.unread > 0 && (
+                      <div className="w-5 h-5 rounded-full bg-foreground flex items-center justify-center flex-shrink-0">
+                        <span className="text-[10px] font-bold text-background">{contact.unread}</span>
+                      </div>
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ALL CHATS */}
+          {filteredAll.length > 0 && (
+            <div>
+              <p className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider mb-2 px-1">
+                All Chats
+              </p>
+              <div className="space-y-0.5">
+                {filteredAll.map((contact) => (
+                  <motion.button
+                    key={contact.id}
+                    onClick={() => openContact(contact.id)}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left hover:bg-secondary/40 transition-colors"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="relative flex-shrink-0">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white ${
+                        contact.isAgent ? "bg-secondary/80" : (contact.avatarBg || "bg-muted")
+                      }`}>
+                        {contact.isAgent ? "⚡" : contact.avatar}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-foreground truncate">{contact.name}</p>
+                        {contact.lastMessageTime && (
+                          <span className="text-[10px] text-muted-foreground/50 flex-shrink-0 ml-2">{contact.lastMessageTime}</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground/60 truncate mt-0.5">{contact.lastMessage}</p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom input hint */}
+        <div className="flex-shrink-0 px-5 pb-8 pt-3">
+          <div className="flex items-center justify-center py-3 rounded-2xl bg-secondary/30 ring-subtle">
+            <span className="text-xs text-muted-foreground/40">Your AI assistant is always here</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ========== CHAT / DETAIL VIEW (inside a contact) ==========
   return (
     <div className="fixed inset-0 bg-background flex flex-col">
-      {/* Safe area */}
       <div className="h-10 flex-shrink-0" />
 
       {/* Top Nav Bar */}
@@ -276,19 +483,29 @@ const Index = () => {
           ) : (
             <>
               <button
-                onClick={() => setPanel("files")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                onClick={goBackToContacts}
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                <FolderOpen size={13} />
-                Files
+                <ChevronLeft size={14} />
               </button>
-              <button
-                onClick={() => setPanel("states")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Plug size={13} />
-                States
-              </button>
+              {isCourierChat && (
+                <>
+                  <button
+                    onClick={() => setPanel("files")}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <FolderOpen size={13} />
+                    Files
+                  </button>
+                  <button
+                    onClick={() => setPanel("states")}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Plug size={13} />
+                    States
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
@@ -299,14 +516,20 @@ const Index = () => {
           </span>
         )}
 
-        <motion.button
-          onClick={() => setDrawerOpen(true)}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-medium"
-          whileTap={{ scale: 0.94 }}
-        >
-          <ArrowUpRight size={13} />
-          Send
-        </motion.button>
+        {isCourierChat && (
+          <motion.button
+            onClick={() => setDrawerOpen(true)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-medium"
+            whileTap={{ scale: 0.94 }}
+          >
+            <ArrowUpRight size={13} />
+            Send
+          </motion.button>
+        )}
+
+        {!isCourierChat && !showingPanel && (
+          <div className="w-16" /> 
+        )}
       </motion.nav>
 
       <div className="h-px bg-foreground/[0.06]" />
@@ -314,7 +537,7 @@ const Index = () => {
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0">
         <AnimatePresence mode="wait">
-          {/* === DEFAULT: Chat View === */}
+          {/* === Chat View === */}
           {panel === "chat" && (
             <motion.div
               key="chat"
@@ -325,57 +548,86 @@ const Index = () => {
               transition={{ duration: 0.15 }}
             >
               {/* Chat header */}
-              <div className="px-5 pt-4 pb-2 flex items-center justify-between flex-shrink-0">
+              <div className="px-5 pt-4 pb-2 flex items-center gap-3 flex-shrink-0">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
+                  activeContact?.isAgent ? "bg-secondary/80" : (activeContact?.avatarBg || "bg-muted")
+                } ${!activeContact?.isAgent ? "text-white font-semibold" : ""}`}>
+                  {activeContact?.avatar || "⚡"}
+                </div>
                 <div>
-                  <h1 className="text-sm font-semibold text-foreground tracking-tight">Courier</h1>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    {notes.length} note{notes.length !== 1 ? "s" : ""} · {sampleFolders.length} folders
-                  </p>
+                  <h1 className="text-sm font-semibold text-foreground tracking-tight">{activeContact?.name || "Chat"}</h1>
+                  {isCourierChat && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {notes.length} note{notes.length !== 1 ? "s" : ""} · {sampleFolders.length} folders
+                    </p>
+                  )}
+                  {activeContact?.isAgent && !isCourierChat && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Agent</p>
+                  )}
                 </div>
               </div>
 
               {/* Chat messages */}
               <div className="flex-1 overflow-auto scrollbar-none px-5 py-2 space-y-2">
-                {chatMessages.map((msg) => (
-                  <motion.div
-                    key={msg.id}
-                    className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div
-                      className={`max-w-[80%] px-3.5 py-2.5 text-xs leading-relaxed ${
-                        msg.from === "user"
-                          ? "bg-foreground text-background rounded-2xl rounded-br-md"
-                          : "bg-secondary/60 text-foreground rounded-2xl rounded-bl-md"
-                      }`}
-                    >
-                      {msg.from === "agent" ? (
-                        <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
-                          <ReactMarkdown>{msg.text}</ReactMarkdown>
+                {isCourierChat ? (
+                  <>
+                    {chatMessages.map((msg) => (
+                      <motion.div
+                        key={msg.id}
+                        className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div
+                          className={`max-w-[80%] px-3.5 py-2.5 text-xs leading-relaxed ${
+                            msg.from === "user"
+                              ? "bg-foreground text-background rounded-2xl rounded-br-md"
+                              : "bg-secondary/60 text-foreground rounded-2xl rounded-bl-md"
+                          }`}
+                        >
+                          {msg.from === "agent" ? (
+                            <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
+                              <ReactMarkdown>{msg.text}</ReactMarkdown>
+                            </div>
+                          ) : (
+                            msg.text
+                          )}
                         </div>
-                      ) : (
-                        msg.text
-                      )}
+                      </motion.div>
+                    ))}
+                    {isAiLoading && chatMessages[chatMessages.length - 1]?.from !== "agent" && (
+                      <motion.div className="flex justify-start" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        <div className="bg-secondary/60 rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
+                          <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} />
+                          <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }} />
+                          <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </>
+                ) : (
+                  /* Non-courier contact: show placeholder */
+                  <div className="flex-1 flex items-center justify-center pt-20">
+                    <div className="text-center">
+                      <div className={`w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center text-xl ${
+                        activeContact?.isAgent ? "bg-secondary/80" : (activeContact?.avatarBg || "bg-muted")
+                      } ${!activeContact?.isAgent ? "text-white font-bold" : ""}`}>
+                        {activeContact?.avatar}
+                      </div>
+                      <p className="text-sm font-medium text-foreground">{activeContact?.name}</p>
+                      <p className="text-xs text-muted-foreground/50 mt-1">
+                        {activeContact?.isAgent ? "Agent chat" : "Start a conversation"}
+                      </p>
                     </div>
-                  </motion.div>
-                ))}
-                {isAiLoading && chatMessages[chatMessages.length - 1]?.from !== "agent" && (
-                  <motion.div className="flex justify-start" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                    <div className="bg-secondary/60 rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
-                      <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} />
-                      <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }} />
-                      <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }} />
-                    </div>
-                  </motion.div>
+                  </div>
                 )}
                 <div ref={chatEndRef} />
               </div>
 
               {/* Recording inline bar */}
               <AnimatePresence>
-                {isRecording && (
+                {isRecording && isCourierChat && (
                   <motion.div
                     className="px-5 pb-2 flex-shrink-0"
                     initial={{ opacity: 0, height: 0 }}
@@ -413,25 +665,27 @@ const Index = () => {
               {/* Input bar */}
               <div className="px-5 pb-8 pt-3 flex-shrink-0">
                 <div className="flex items-center gap-2 bg-secondary/50 rounded-2xl ring-subtle px-3 py-1.5">
-                  <motion.button
-                    onClick={toggleMicRecording}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                      isRecording ? "bg-destructive text-destructive-foreground" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    {isRecording ? <Square size={12} fill="currentColor" /> : <Mic size={15} />}
-                  </motion.button>
+                  {isCourierChat && (
+                    <motion.button
+                      onClick={toggleMicRecording}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                        isRecording ? "bg-destructive text-destructive-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      {isRecording ? <Square size={12} fill="currentColor" /> : <Mic size={15} />}
+                    </motion.button>
+                  )}
                   <input
                     type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleChatSend()}
-                    placeholder="Talk to your agent..."
+                    onKeyDown={(e) => e.key === "Enter" && (isCourierChat ? handleChatSend() : null)}
+                    placeholder={isCourierChat ? "Talk to your agent..." : `Message ${activeContact?.name || ""}...`}
                     className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none py-2"
                   />
                   <motion.button
-                    onClick={handleChatSend}
+                    onClick={isCourierChat ? handleChatSend : undefined}
                     className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0"
                     whileTap={{ scale: 0.9 }}
                   >
@@ -441,8 +695,6 @@ const Index = () => {
               </div>
             </motion.div>
           )}
-
-          {/* === Notes Panel === */}
 
           {/* === Files Panel — Folder List === */}
           {panel === "files" && !openFolderId && !openNoteId && (
@@ -455,15 +707,12 @@ const Index = () => {
               transition={{ duration: 0.15 }}
             >
               <div className="space-y-2">
-                {/* Meeting Notes folder */}
                 <motion.button
                   onClick={() => setOpenFolderId("meeting-notes")}
                   className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-secondary/40 ring-subtle text-left hover:bg-secondary/60 transition-colors"
                   whileTap={{ scale: 0.98 }}
                 >
-                  <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0 text-sm">
-                    🎙️
-                  </div>
+                  <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0 text-sm">🎙️</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-foreground">Meeting Notes</p>
                     <p className="text-[10px] text-muted-foreground">{notes.length} notes</p>
@@ -471,7 +720,6 @@ const Index = () => {
                   <ChevronRight size={14} className="text-muted-foreground/30" />
                 </motion.button>
 
-                {/* Regular folders */}
                 {sampleFolders.map((folder) => (
                   <motion.button
                     key={folder.id}
@@ -479,9 +727,7 @@ const Index = () => {
                     className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-secondary/40 ring-subtle text-left hover:bg-secondary/60 transition-colors"
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0 text-sm">
-                      {folder.icon}
-                    </div>
+                    <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0 text-sm">{folder.icon}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-foreground">{folder.name}</p>
                       <p className="text-[10px] text-muted-foreground">{folder.files.length} files</p>
@@ -685,9 +931,7 @@ const Index = () => {
             >
               {Object.entries(groupedIntegrations).map(([category, items]) => (
                 <div key={category} className="mb-5">
-                  <p className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider mb-2 px-1">
-                    {category}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider mb-2 px-1">{category}</p>
                   <div className="space-y-1.5">
                     {items.map((item) => {
                       const isConnected = connectedIntegrations.has(item.name);
@@ -696,19 +940,13 @@ const Index = () => {
                           key={item.name}
                           onClick={() => toggleIntegration(item.name)}
                           className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all ${
-                            isConnected
-                              ? "bg-foreground/[0.08] ring-1 ring-foreground/20"
-                              : "bg-secondary/40 ring-subtle"
+                            isConnected ? "bg-foreground/[0.08] ring-1 ring-foreground/20" : "bg-secondary/40 ring-subtle"
                           }`}
                           whileTap={{ scale: 0.98 }}
                         >
-                          <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0 text-sm">
-                            {item.icon}
-                          </div>
+                          <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0 text-sm">{item.icon}</div>
                           <span className="flex-1 text-xs font-medium text-foreground">{item.name}</span>
-                          <span className={`text-[10px] font-medium ${
-                            isConnected ? "text-green-400" : "text-muted-foreground/40"
-                          }`}>
+                          <span className={`text-[10px] font-medium ${isConnected ? "text-green-400" : "text-muted-foreground/40"}`}>
                             {isConnected ? "Connected" : "Connect"}
                           </span>
                         </motion.button>
