@@ -219,9 +219,9 @@ const Receive = () => {
             <div className="flex-shrink-0">
               <div className="h-6" />
               <div className="px-6 pb-4 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full border border-foreground/20 flex items-center justify-center">
+                <button onClick={() => { setShowProfile(true); setProfileView("main"); }} className="w-8 h-8 rounded-full border border-foreground/20 flex items-center justify-center hover:bg-foreground/5 transition-colors">
                   <span className="text-xs font-semibold text-foreground">D</span>
-                </div>
+                </button>
                 <div className="flex-1 min-w-0">
                   <h1 onClick={() => setShowOwner(!showOwner)} className="text-sm font-medium text-foreground tracking-tight whitespace-nowrap cursor-pointer select-none">{showOwner ? "Sarah's Agent" : "Dash"}</h1>
                   <motion.button
