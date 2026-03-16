@@ -80,7 +80,7 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
           />
 
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-[28px] ring-subtle max-h-[85vh] overflow-auto"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-[28px] ring-subtle max-h-[85vh] overflow-auto scrollbar-none"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
