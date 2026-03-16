@@ -270,6 +270,15 @@ const Index = () => {
                     </div>
                   </motion.div>
                 ))}
+                {isAiLoading && chatMessages[chatMessages.length - 1]?.from !== "agent" && (
+                  <motion.div className="flex justify-start" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <div className="bg-secondary/60 rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
+                      <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} />
+                      <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }} />
+                      <motion.span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }} />
+                    </div>
+                  </motion.div>
+                )}
                 <div ref={chatEndRef} />
               </div>
 
