@@ -460,13 +460,23 @@ const Index = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-foreground truncate">{contact.name}</p>
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {contact.name}
+                          {contact.agentName && (
+                            <span className="text-muted-foreground/50 font-normal"> ({contact.agentName})</span>
+                          )}
+                        </p>
                         {contact.lastMessageTime && (
                           <span className="text-[10px] text-muted-foreground/50 flex-shrink-0 ml-2">{contact.lastMessageTime}</span>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground/60 truncate mt-0.5">{contact.lastMessage}</p>
                     </div>
+                    {contact.unread > 0 && (
+                      <div className="w-5 h-5 rounded-full bg-foreground flex items-center justify-center flex-shrink-0">
+                        <span className="text-[10px] font-bold text-background">{contact.unread}</span>
+                      </div>
+                    )}
                   </motion.button>
                 ))}
               </div>
