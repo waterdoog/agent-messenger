@@ -544,7 +544,7 @@ const Index = () => {
           {/* === States Panel === */}
           {panel === "states" && (
             <motion.div
-              key="integrations"
+              key="states"
               className="flex-1 overflow-auto scrollbar-none px-5 pt-4 pb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
