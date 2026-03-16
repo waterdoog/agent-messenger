@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, FileText, Send, FolderOpen } from "lucide-react";
+import { Calendar, FileText, Send, FolderOpen, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import AgentCharacter from "@/components/AgentCharacter";
 import { sampleMeetingNotes } from "@/data/sampleNotes";
@@ -116,6 +116,7 @@ const Receive = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPanel, setShowPanel] = useState<"notes" | "files" | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -200,86 +201,123 @@ const Receive = () => {
                 <div className="w-8 h-8 rounded-full bg-foreground/10 flex items-center justify-center">
                   <span className="text-sm">🤖</span>
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <h1 className="text-sm font-medium text-foreground tracking-tight">Agent Delivery</h1>
                   <p className="text-[11px] text-muted-foreground">From Sarah · {carriedNotes.length} notes, 1 folder, calendar</p>
+                </div>
+                <div className="flex gap-1.5">
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => setShowPanel(showPanel === "notes" ? null : "notes")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
+                      showPanel === "notes" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
+                    }`}
+                  >
+                    <FileText size={12} />
+                    Notes
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => setShowPanel(showPanel === "files" ? null : "files")}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors ${
+                      showPanel === "files" ? "bg-foreground text-background" : "bg-secondary text-foreground ring-subtle"
+                    }`}
+                  >
+                    <FolderOpen size={12} />
+                    Files
+                  </motion.button>
                 </div>
               </div>
             </div>
 
-            {/* Scrollable content */}
-            <div ref={scrollRef} className="flex-1 overflow-auto scrollbar-none min-h-0 px-4 pb-4 space-y-3">
-              {/* Carried Notes Cards */}
-              {carriedNotes.map((note, i) => (
+            {/* Expandable Content Panel */}
+            <AnimatePresence>
+              {showPanel && (
                 <motion.div
-                  key={note.id}
-                  className="bg-card rounded-2xl ring-subtle p-4"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.1, duration: 0.5 }}
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="flex-shrink-0 overflow-hidden border-b border-foreground/[0.04]"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <FileText size={13} className="text-foreground/60" />
-                    <span className="text-xs font-medium text-foreground">{note.title}</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-[1.7]">{note.summary}</p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {note.tags.map((tag) => (
-                      <span key={tag} className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">
-                        {tag}
+                  <div className="px-4 pb-4 space-y-2.5 max-h-[50vh] overflow-auto scrollbar-none">
+                    <div className="flex items-center justify-between px-1 pt-1">
+                      <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                        {showPanel === "notes" ? "Meeting Notes" : "Shared Files & Calendar"}
                       </span>
+                      <button onClick={() => setShowPanel(null)} className="p-1 rounded-lg hover:bg-secondary transition-colors">
+                        <X size={14} className="text-muted-foreground" />
+                      </button>
+                    </div>
+
+                    {showPanel === "notes" && carriedNotes.map((note, i) => (
+                      <motion.div
+                        key={note.id}
+                        className="bg-card rounded-2xl ring-subtle p-4"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.06, duration: 0.3 }}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText size={13} className="text-foreground/60" />
+                          <span className="text-xs font-medium text-foreground">{note.title}</span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground leading-[1.7]">{note.summary}</p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {note.tags.map((tag) => (
+                            <span key={tag} className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">{tag}</span>
+                          ))}
+                          <span className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">
+                            {Math.floor(note.duration / 60)} min
+                          </span>
+                        </div>
+                      </motion.div>
                     ))}
-                    <span className="px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">
-                      {Math.floor(note.duration / 60)} min
-                    </span>
+
+                    {showPanel === "files" && (
+                      <>
+                        <motion.div
+                          className="bg-card rounded-2xl ring-subtle p-4"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <FolderOpen size={13} className="text-foreground/60" />
+                            <span className="text-xs font-medium text-foreground">Product Specs</span>
+                            <span className="text-[10px] text-muted-foreground">· 8 files</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">Shared read-only access</p>
+                        </motion.div>
+                        <motion.div
+                          className="bg-card rounded-2xl ring-subtle p-4"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.06, duration: 0.3 }}
+                        >
+                          <div className="flex items-center gap-2 mb-2.5">
+                            <Calendar size={14} className="text-foreground/60" />
+                            <span className="text-xs font-medium text-foreground">Book a Slot</span>
+                          </div>
+                          <div className="space-y-1.5">
+                            {["Tue 10:00 AM", "Wed 2:00 PM", "Thu 11:00 AM"].map((slot) => (
+                              <button key={slot} className="w-full text-left px-3 py-2.5 rounded-xl bg-secondary/60 ring-subtle text-xs text-foreground hover:bg-foreground/[0.08] transition-colors">
+                                {slot}
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+
+                    <p className="text-center text-[10px] text-muted-foreground/40 py-1">🔒 Only permitted context is shared</p>
                   </div>
                 </motion.div>
-              ))}
+              )}
+            </AnimatePresence>
 
-              {/* Folder Card */}
-              <motion.div
-                className="bg-card rounded-2xl ring-subtle p-4"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <FolderOpen size={13} className="text-foreground/60" />
-                  <span className="text-xs font-medium text-foreground">Product Specs</span>
-                  <span className="text-[10px] text-muted-foreground">· 8 files</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground">Shared read-only access</p>
-              </motion.div>
-
-              {/* Calendar Card */}
-              <motion.div
-                className="bg-card rounded-2xl ring-subtle p-4"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-              >
-                <div className="flex items-center gap-2 mb-2.5">
-                  <Calendar size={14} className="text-foreground/60" />
-                  <span className="text-xs font-medium text-foreground">Book a Slot</span>
-                </div>
-                <div className="space-y-1.5">
-                  {["Tue 10:00 AM", "Wed 2:00 PM", "Thu 11:00 AM"].map((slot) => (
-                    <button key={slot} className="w-full text-left px-3 py-2.5 rounded-xl bg-secondary/60 ring-subtle text-xs text-foreground hover:bg-foreground/[0.08] transition-colors">
-                      {slot}
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-
-              <motion.p
-                className="text-center text-[10px] text-muted-foreground/40 py-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                🔒 Only permitted context is shared
-              </motion.p>
-
+            {/* Scrollable chat area */}
+            <div ref={scrollRef} className="flex-1 overflow-auto scrollbar-none min-h-0 px-4 pb-4 space-y-3">
               {/* Chat messages */}
               {messages.map((msg, i) => (
                 <motion.div
