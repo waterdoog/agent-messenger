@@ -244,7 +244,7 @@ const Index = () => {
   };
 
   const showingPanel = panel !== "chat";
-  const openNote = openNoteId ? notes.find((n) => n.id === openNoteId) : null;
+  
 
   // Group integrations by category
   const groupedIntegrations = integrations.reduce<Record<string, Integration[]>>((acc, item) => {
