@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, FileText, Send, FolderOpen, X, UserPlus } from "lucide-react";
+import { Calendar, FileText, Send, FolderOpen, X, UserPlus, Shield, ChevronRight, Check, XCircle, Eye, ArrowLeft } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import AgentCharacter from "@/components/AgentCharacter";
 import { sampleMeetingNotes } from "@/data/sampleNotes";
@@ -122,7 +122,23 @@ const Receive = () => {
   const [pulseEmail, setPulseEmail] = useState("");
   const [pulseName, setPulseName] = useState("");
   const [showOwner, setShowOwner] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileView, setProfileView] = useState<"main" | "access">("main");
+  const [accessTab, setAccessTab] = useState<"files" | "states">("files");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const escalationCases = [
+    { id: 1, requester: "Tom", resource: "WhatsApp messages on Project X", date: "Mar 12", approved: true },
+    { id: 2, requester: "Lisa", resource: "Calendar — private events", date: "Mar 10", approved: false },
+    { id: 3, requester: "Mike", resource: "Meeting notes — Q4 Review", date: "Mar 8", approved: true },
+    { id: 4, requester: "Anna", resource: "Slack DMs with Jake", date: "Mar 5", approved: false },
+  ];
+
+  const accessibleFiles = [
+    { name: "Meeting Notes", type: "folder", count: 3, icon: FileText },
+    { name: "Product Specs", type: "folder", count: 8, icon: FolderOpen },
+    { name: "Calendar", type: "integration", count: null, icon: Calendar },
+  ];
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("expanding"), 2400);
@@ -203,9 +219,9 @@ const Receive = () => {
             <div className="flex-shrink-0">
               <div className="h-6" />
               <div className="px-6 pb-4 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full border border-foreground/20 flex items-center justify-center">
+                <button onClick={() => { setShowProfile(true); setProfileView("main"); }} className="w-8 h-8 rounded-full border border-foreground/20 flex items-center justify-center hover:bg-foreground/5 transition-colors">
                   <span className="text-xs font-semibold text-foreground">D</span>
-                </div>
+                </button>
                 <div className="flex-1 min-w-0">
                   <h1 onClick={() => setShowOwner(!showOwner)} className="text-sm font-medium text-foreground tracking-tight whitespace-nowrap cursor-pointer select-none">{showOwner ? "Sarah's Agent" : "Dash"}</h1>
                   <motion.button
@@ -332,7 +348,151 @@ const Receive = () => {
               )}
             </AnimatePresence>
 
-            {/* Expandable Content Panel */}
+            {/* === Agent Profile Overlay === */}
+            <AnimatePresence>
+              {showProfile && (
+                <>
+                  <motion.div
+                    className="fixed inset-0 bg-black/70 z-40 backdrop-blur-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowProfile(false)}
+                  />
+                  <motion.div
+                    className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-[28px] ring-subtle"
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "100%" }}
+                    transition={{ type: "spring", damping: 32, stiffness: 300 }}
+                  >
+                    <div className="flex justify-center pt-3 pb-1">
+                      <div className="w-8 h-[3px] rounded-full bg-foreground/10" />
+                    </div>
+                    <div className="px-6 pb-10 pt-2">
+                      <AnimatePresence mode="wait">
+                        {profileView === "main" ? (
+                          <motion.div key="profile-main" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                            <div className="flex items-center justify-between mb-1">
+                              <h2 className="text-base font-semibold text-foreground tracking-tight">Agent Profile</h2>
+                              <button onClick={() => setShowProfile(false)} className="text-muted-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                                <X size={18} />
+                              </button>
+                            </div>
+
+                            {/* Simple profile card */}
+                            <div className="flex items-center gap-3 mt-4 mb-6">
+                              <div className="w-14 h-14 rounded-full border-2 border-foreground/10 flex items-center justify-center">
+                                <span className="text-lg font-semibold text-foreground">D</span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">Dash</p>
+                                <p className="text-xs text-muted-foreground">Sarah's Agent</p>
+                              </div>
+                            </div>
+
+                            {/* Access button */}
+                            <motion.button
+                              onClick={() => setProfileView("access")}
+                              className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-secondary/60 ring-subtle hover:bg-secondary transition-colors"
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Shield size={16} className="text-foreground/60" />
+                                <span className="text-sm font-medium text-foreground">Access</span>
+                              </div>
+                              <ChevronRight size={16} className="text-muted-foreground" />
+                            </motion.button>
+                          </motion.div>
+                        ) : (
+                          <motion.div key="profile-access" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
+                            <div className="flex items-center gap-2 mb-5">
+                              <button onClick={() => setProfileView("main")} className="p-1 rounded-lg hover:bg-secondary transition-colors">
+                                <ArrowLeft size={18} className="text-foreground" />
+                              </button>
+                              <h2 className="text-base font-semibold text-foreground tracking-tight">Access</h2>
+                              <div className="flex-1" />
+                              <button onClick={() => setShowProfile(false)} className="text-muted-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                                <X size={18} />
+                              </button>
+                            </div>
+
+                            {/* Tabs */}
+                            <div className="flex gap-1.5 mb-4">
+                              {(["files", "states"] as const).map((tab) => (
+                                <button
+                                  key={tab}
+                                  onClick={() => setAccessTab(tab)}
+                                  className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${
+                                    accessTab === tab ? "bg-foreground text-background" : "bg-secondary text-foreground"
+                                  }`}
+                                >
+                                  {tab === "files" ? "Files" : "States"}
+                                </button>
+                              ))}
+                            </div>
+
+                            {/* Files tab */}
+                            {accessTab === "files" && (
+                              <div className="space-y-2 max-h-[40vh] overflow-auto scrollbar-none">
+                                {accessibleFiles.map((file, i) => (
+                                  <motion.div
+                                    key={file.name}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary/40 ring-subtle"
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                  >
+                                    <file.icon size={14} className="text-foreground/50" />
+                                    <span className="text-xs font-medium text-foreground flex-1">{file.name}</span>
+                                    {file.count !== null && (
+                                      <span className="text-[10px] text-muted-foreground">{file.count} items</span>
+                                    )}
+                                    <Eye size={12} className="text-muted-foreground/40" />
+                                  </motion.div>
+                                ))}
+                                <p className="text-center text-[10px] text-muted-foreground/40 pt-2">🔒 Read-only access granted by Sarah</p>
+                              </div>
+                            )}
+
+                            {/* States tab — escalation protocol */}
+                            {accessTab === "states" && (
+                              <div className="space-y-2 max-h-[40vh] overflow-auto scrollbar-none">
+                                <p className="text-[11px] text-muted-foreground mb-2">Escalation requests — when someone asks for data beyond default access.</p>
+                                {escalationCases.map((c, i) => (
+                                  <motion.div
+                                    key={c.id}
+                                    className="px-4 py-3 rounded-2xl bg-secondary/40 ring-subtle"
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                  >
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="text-xs font-medium text-foreground">{c.requester}</span>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-[10px] text-muted-foreground">{c.date}</span>
+                                        {c.approved ? (
+                                          <span className="flex items-center gap-0.5 text-[10px] text-emerald-500 font-medium"><Check size={10} /> Approved</span>
+                                        ) : (
+                                          <span className="flex items-center gap-0.5 text-[10px] text-red-400 font-medium"><XCircle size={10} /> Denied</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground">{c.resource}</p>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+
+
             <AnimatePresence>
               {showPanel && (
                 <motion.div
