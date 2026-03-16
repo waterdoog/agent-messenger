@@ -226,6 +226,9 @@ const Index = () => {
   const [friendSearch, setFriendSearch] = useState("");
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
   const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileView, setProfileView] = useState<"main" | "access">("main");
+  const [accessTab, setAccessTab] = useState<"files" | "states">("files");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
