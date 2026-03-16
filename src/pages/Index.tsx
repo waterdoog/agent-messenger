@@ -6,11 +6,6 @@ import RecordButton from "@/components/RecordButton";
 import ContextDrawer from "@/components/ContextDrawer";
 import AgentDispatchAnimation from "@/components/AgentDispatchAnimation";
 
-interface Note {
-  id: string;
-  duration: number;
-  timestamp: Date;
-}
 
 interface ChatMessage {
   id: string;
