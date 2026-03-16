@@ -122,7 +122,23 @@ const Receive = () => {
   const [pulseEmail, setPulseEmail] = useState("");
   const [pulseName, setPulseName] = useState("");
   const [showOwner, setShowOwner] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileView, setProfileView] = useState<"main" | "access">("main");
+  const [accessTab, setAccessTab] = useState<"files" | "states">("files");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const escalationCases = [
+    { id: 1, requester: "Tom", resource: "WhatsApp messages on Project X", date: "Mar 12", approved: true },
+    { id: 2, requester: "Lisa", resource: "Calendar — private events", date: "Mar 10", approved: false },
+    { id: 3, requester: "Mike", resource: "Meeting notes — Q4 Review", date: "Mar 8", approved: true },
+    { id: 4, requester: "Anna", resource: "Slack DMs with Jake", date: "Mar 5", approved: false },
+  ];
+
+  const accessibleFiles = [
+    { name: "Meeting Notes", type: "folder", count: 3, icon: FileText },
+    { name: "Product Specs", type: "folder", count: 8, icon: FolderOpen },
+    { name: "Calendar", type: "integration", count: null, icon: Calendar },
+  ];
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("expanding"), 2400);
