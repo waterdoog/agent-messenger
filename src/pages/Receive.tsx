@@ -200,24 +200,23 @@ const Receive = () => {
           >
             {/* Header */}
             <div className="flex-shrink-0">
-              <div className="h-14" />
+              <div className="h-6" />
               <div className="px-6 pb-4 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-foreground/10 flex items-center justify-center">
-                  <span className="text-sm">🤖</span>
+                <div className="w-8 h-8 rounded-full border border-foreground/20 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-foreground">D</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h1 className="text-sm font-medium text-foreground tracking-tight">Dash <span className="text-muted-foreground font-normal">(Sarah's Agent)</span></h1>
+                    <h1 className="text-sm font-medium text-foreground tracking-tight whitespace-nowrap">Dash <span className="text-muted-foreground font-normal">(Sarah's Agent)</span></h1>
                     <motion.button
                       onClick={() => { setShowAddPulse(true); setPulseStep("signup"); }}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-foreground/10 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-foreground/10 text-[10px] text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                       whileTap={{ scale: 0.95 }}
                     >
                       <UserPlus size={10} />
                       Add
                     </motion.button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">{carriedNotes.length} notes, 1 folder, calendar</p>
                 </div>
                 <div className="flex gap-1.5">
                   <motion.button
