@@ -221,6 +221,11 @@ const Index = () => {
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [connectedIntegrations, setConnectedIntegrations] = useState<Set<string>>(new Set());
   const [openFolderId, setOpenFolderId] = useState<string | null>(null);
+  const [showFriends, setShowFriends] = useState(false);
+  const [friendTab, setFriendTab] = useState<"add" | "requests">("requests");
+  const [friendSearch, setFriendSearch] = useState("");
+  const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
+  const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
