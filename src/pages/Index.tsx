@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, X, Clock, Users, Tag, CheckSquare } from "lucide-react";
-import { sampleMeetingNotes, MeetingNote } from "@/data/sampleNotes";
+import { sampleMeetingNotes, sampleFolders, MeetingNote, FolderItem } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import RecordButton from "@/components/RecordButton";
