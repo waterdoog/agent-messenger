@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Square } from "lucide-react";
 
@@ -11,6 +11,8 @@ const RecordButton = ({ onRecordingChange, onRecordingComplete }: RecordButtonPr
   const [isRecording, setIsRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     if (isRecording) {
@@ -23,16 +25,45 @@ const RecordButton = ({ onRecordingChange, onRecordingComplete }: RecordButtonPr
     };
   }, [isRecording]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+      setSeconds(0);
+      onRecordingChange?.(true);
+    } catch (err) {
+      console.error("Microphone access denied:", err);
+    }
+  }, [onRecordingChange]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+    }
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setIsRecording(false);
+    onRecordingChange?.(false);
+    onRecordingComplete?.(seconds);
+    setSeconds(0);
+  }, [onRecordingChange, onRecordingComplete, seconds]);
+
   const toggle = () => {
     if (isRecording) {
-      setIsRecording(false);
-      onRecordingChange?.(false);
-      onRecordingComplete?.(seconds);
-      setSeconds(0);
+      stopRecording();
     } else {
-      setIsRecording(true);
-      onRecordingChange?.(true);
-      setSeconds(0);
+      startRecording();
     }
   };
 

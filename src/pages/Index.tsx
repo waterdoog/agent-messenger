@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, X, Clock, Users, Tag, CheckSquare } from "lucide-react";
 import { sampleMeetingNotes, MeetingNote } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -9,12 +9,37 @@ import AgentDispatchAnimation from "@/components/AgentDispatchAnimation";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
-
 interface ChatMessage {
   id: string;
   from: "user" | "agent";
   text: string;
 }
+
+interface Integration {
+  name: string;
+  icon: string;
+  connected: boolean;
+  category: string;
+}
+
+const integrations: Integration[] = [
+  { name: "Google Calendar", icon: "📅", connected: false, category: "Calendar" },
+  { name: "Notion", icon: "📝", connected: false, category: "Docs" },
+  { name: "Google Docs", icon: "📄", connected: false, category: "Docs" },
+  { name: "Slack", icon: "💬", connected: false, category: "Communication" },
+  { name: "Microsoft Teams", icon: "🟦", connected: false, category: "Communication" },
+  { name: "Zoom", icon: "📹", connected: false, category: "Communication" },
+  { name: "Google Drive", icon: "☁️", connected: false, category: "Storage" },
+  { name: "Dropbox", icon: "📦", connected: false, category: "Storage" },
+  { name: "OneDrive", icon: "🔵", connected: false, category: "Storage" },
+  { name: "Linear", icon: "🔷", connected: false, category: "Project Mgmt" },
+  { name: "Jira", icon: "🔶", connected: false, category: "Project Mgmt" },
+  { name: "GitHub", icon: "🐙", connected: false, category: "Dev" },
+  { name: "Figma", icon: "🎨", connected: false, category: "Design" },
+  { name: "Confluence", icon: "📘", connected: false, category: "Docs" },
+  { name: "Outlook Calendar", icon: "📆", connected: false, category: "Calendar" },
+  { name: "Asana", icon: "🟠", connected: false, category: "Project Mgmt" },
+];
 
 const Index = () => {
   const [inputText, setInputText] = useState("");
@@ -28,11 +53,70 @@ const Index = () => {
   ]);
   const [panel, setPanel] = useState<"chat" | "files" | "integrations" | "notes">("chat");
   const [isRecording, setIsRecording] = useState(false);
+  const [openNoteId, setOpenNoteId] = useState<string | null>(null);
+  const [connectedIntegrations, setConnectedIntegrations] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Real recording refs
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const recordingStartRef = useRef<number>(0);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
+
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  const startMicRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      recordingStartRef.current = Date.now();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Microphone access denied:", err);
+    }
+  }, []);
+
+  const stopMicRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+    }
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    const duration = Math.round((Date.now() - recordingStartRef.current) / 1000);
+    setIsRecording(false);
+    setHasRecording(true);
+    setNotes((prev) => [
+      {
+        id: Date.now().toString(),
+        title: "New Recording",
+        summary: "Recording captured — tap to add notes or let AI transcribe.",
+        duration,
+        timestamp: new Date(),
+        attendees: [],
+        actionItems: [],
+        tags: ["recording"],
+      },
+      ...prev,
+    ]);
+  }, []);
+
+  const toggleMicRecording = () => {
+    if (isRecording) {
+      stopMicRecording();
+    } else {
+      startMicRecording();
+    }
+  };
 
   const handleRecordingComplete = (duration: number) => {
     setHasRecording(true);
@@ -40,7 +124,7 @@ const Index = () => {
       {
         id: Date.now().toString(),
         title: "New Recording",
-        summary: "Recording captured",
+        summary: "Recording captured — tap to add notes or let AI transcribe.",
         duration,
         timestamp: new Date(),
         attendees: [],
@@ -69,7 +153,6 @@ const Index = () => {
     setInputText("");
     setIsAiLoading(true);
 
-    // Build conversation history for AI
     const allMsgs = [...chatMessages, userMsg].map((m) => ({
       role: m.from === "user" ? "user" as const : "assistant" as const,
       content: m.text,
@@ -137,6 +220,14 @@ const Index = () => {
     setIsAiLoading(false);
   };
 
+  const toggleIntegration = (name: string) => {
+    setConnectedIntegrations((prev) => {
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
+    });
+  };
+
   const formatDuration = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = s % 60;
@@ -152,6 +243,13 @@ const Index = () => {
   };
 
   const showingPanel = panel !== "chat";
+  const openNote = openNoteId ? notes.find((n) => n.id === openNoteId) : null;
+
+  // Group integrations by category
+  const groupedIntegrations = integrations.reduce<Record<string, Integration[]>>((acc, item) => {
+    (acc[item.category] = acc[item.category] || []).push(item);
+    return acc;
+  }, {});
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col">
@@ -165,11 +263,10 @@ const Index = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        {/* Left: Files & Integrations */}
         <div className="flex items-center gap-1">
           {showingPanel ? (
             <button
-              onClick={() => setPanel("chat")}
+              onClick={() => { setPanel("chat"); setOpenNoteId(null); }}
               className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronLeft size={14} />
@@ -195,12 +292,12 @@ const Index = () => {
           )}
         </div>
 
-        {/* Center: Panel title when in subpage */}
         {showingPanel && (
-          <span className="text-xs font-medium text-foreground capitalize">{panel}</span>
+          <span className="text-xs font-medium text-foreground capitalize">
+            {openNote ? "Note" : panel}
+          </span>
         )}
 
-        {/* Right: Send Agent */}
         <motion.button
           onClick={() => setDrawerOpen(true)}
           className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-foreground text-background text-xs font-medium"
@@ -244,7 +341,7 @@ const Index = () => {
               </div>
 
               {/* Chat messages */}
-              <div className="flex-1 overflow-auto px-5 py-2 space-y-2">
+              <div className="flex-1 overflow-auto scrollbar-none px-5 py-2 space-y-2">
                 {chatMessages.map((msg) => (
                   <motion.div
                     key={msg.id}
@@ -282,19 +379,39 @@ const Index = () => {
                 <div ref={chatEndRef} />
               </div>
 
-              {/* Recording inline */}
+              {/* Recording inline bar */}
               <AnimatePresence>
                 {isRecording && (
                   <motion.div
-                    className="px-5 flex-shrink-0"
+                    className="px-5 pb-2 flex-shrink-0"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                   >
-                    <RecordButton
-                      onRecordingChange={setIsRecording}
-                      onRecordingComplete={handleRecordingComplete}
-                    />
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-destructive/10 ring-1 ring-destructive/20">
+                      <motion.div
+                        className="w-2.5 h-2.5 rounded-full bg-destructive"
+                        animate={{ opacity: [1, 0.3, 1] }}
+                        transition={{ repeat: Infinity, duration: 1.2 }}
+                      />
+                      <div className="flex items-end gap-[2px] h-4 flex-1">
+                        {Array.from({ length: 24 }).map((_, i) => (
+                          <motion.div
+                            key={i}
+                            className="w-[2px] rounded-full bg-foreground/40"
+                            animate={{ height: [2, Math.random() * 14 + 2, 2] }}
+                            transition={{ duration: 0.3 + Math.random() * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.03 }}
+                          />
+                        ))}
+                      </div>
+                      <motion.button
+                        onClick={stopMicRecording}
+                        className="w-7 h-7 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0"
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Square size={11} className="text-background" fill="currentColor" />
+                      </motion.button>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -303,13 +420,13 @@ const Index = () => {
               <div className="px-5 pb-8 pt-3 flex-shrink-0">
                 <div className="flex items-center gap-2 bg-secondary/50 rounded-2xl ring-subtle px-3 py-1.5">
                   <motion.button
-                    onClick={() => setIsRecording(!isRecording)}
+                    onClick={toggleMicRecording}
                     className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                      isRecording ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                      isRecording ? "bg-destructive text-destructive-foreground" : "text-muted-foreground hover:text-foreground"
                     }`}
                     whileTap={{ scale: 0.9 }}
                   >
-                    <Mic size={15} />
+                    {isRecording ? <Square size={12} fill="currentColor" /> : <Mic size={15} />}
                   </motion.button>
                   <input
                     type="text"
@@ -332,7 +449,7 @@ const Index = () => {
           )}
 
           {/* === Notes Panel === */}
-          {panel === "notes" && (
+          {panel === "notes" && !openNote && (
             <motion.div
               key="notes"
               className="flex-1 flex flex-col min-h-0"
@@ -341,13 +458,15 @@ const Index = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
             >
-              <div className="flex-1 overflow-auto px-5 pt-4 pb-2">
+              <div className="flex-1 overflow-auto scrollbar-none px-5 pt-4 pb-2">
                 {notes.length > 0 ? (
                   <div className="space-y-2">
                     {notes.map((note) => (
-                      <div
+                      <motion.button
                         key={note.id}
-                        className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary/40 ring-subtle"
+                        onClick={() => setOpenNoteId(note.id)}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary/40 ring-subtle text-left hover:bg-secondary/60 transition-colors"
+                        whileTap={{ scale: 0.98 }}
                       >
                         <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0">
                           <FileText size={14} className="text-muted-foreground" />
@@ -358,10 +477,16 @@ const Index = () => {
                             {formatDate(note.timestamp)} · {formatDuration(note.duration)}
                           </p>
                         </div>
-                        <button className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setNotes((prev) => prev.filter((n) => n.id !== note.id));
+                          }}
+                          className="text-muted-foreground/30 hover:text-muted-foreground transition-colors p-1"
+                        >
                           <Trash2 size={13} />
                         </button>
-                      </div>
+                      </motion.button>
                     ))}
                   </div>
                 ) : (
@@ -376,6 +501,100 @@ const Index = () => {
                   onRecordingChange={() => {}}
                   onRecordingComplete={handleRecordingComplete}
                 />
+              </div>
+            </motion.div>
+          )}
+
+          {/* === Note Detail View === */}
+          {panel === "notes" && openNote && (
+            <motion.div
+              key={`note-${openNote.id}`}
+              className="flex-1 flex flex-col min-h-0"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex-1 overflow-auto scrollbar-none px-5 pt-4 pb-8">
+                {/* Title & meta */}
+                <h2 className="text-base font-semibold text-foreground tracking-tight">
+                  {openNote.title}
+                </h2>
+                <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Clock size={10} />
+                    {formatDate(openNote.timestamp)} · {formatDuration(openNote.duration)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users size={10} />
+                    {openNote.attendees.length || "—"}
+                  </span>
+                </div>
+
+                {/* Tags */}
+                {openNote.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {openNote.tags.map((tag) => (
+                      <span key={tag} className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-secondary text-[10px] text-muted-foreground">
+                        <Tag size={8} />
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Summary */}
+                <div className="mt-5">
+                  <h3 className="text-xs font-semibold text-foreground mb-2">Summary</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {openNote.summary}
+                  </p>
+                </div>
+
+                {/* Attendees */}
+                {openNote.attendees.length > 0 && (
+                  <div className="mt-5">
+                    <h3 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <Users size={12} />
+                      Attendees
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {openNote.attendees.map((a) => (
+                        <span key={a} className="px-2.5 py-1 rounded-xl bg-secondary/60 ring-subtle text-xs text-foreground">
+                          {a}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Items */}
+                {openNote.actionItems.length > 0 && (
+                  <div className="mt-5">
+                    <h3 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <CheckSquare size={12} />
+                      Action Items
+                    </h3>
+                    <div className="space-y-2">
+                      {openNote.actionItems.map((item, i) => (
+                        <div key={i} className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-secondary/30">
+                          <div className="w-4 h-4 mt-0.5 rounded border border-foreground/15 flex-shrink-0" />
+                          <p className="text-xs text-foreground/80 leading-relaxed">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Back to notes button at bottom */}
+              <div className="flex-shrink-0 px-5 pb-8 pt-3">
+                <button
+                  onClick={() => setOpenNoteId(null)}
+                  className="w-full py-3 rounded-2xl bg-secondary/40 ring-subtle text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ← Back to Notes
+                </button>
               </div>
             </motion.div>
           )}
@@ -404,31 +623,46 @@ const Index = () => {
           {panel === "integrations" && (
             <motion.div
               key="integrations"
-              className="flex-1 overflow-auto px-5 pt-4"
+              className="flex-1 overflow-auto scrollbar-none px-5 pt-4 pb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
             >
-              <div className="space-y-2">
-                {[
-                  { name: "Notion", connected: false },
-                  { name: "Google Docs", connected: false },
-                  { name: "Google Calendar", connected: false },
-                  { name: "Slack", connected: false },
-                ].map((item) => (
-                  <button
-                    key={item.name}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-secondary/40 ring-subtle text-left"
-                  >
-                    <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0">
-                      <Plug size={14} className="text-muted-foreground" />
-                    </div>
-                    <span className="flex-1 text-xs font-medium text-foreground">{item.name}</span>
-                    <span className="text-[10px] text-muted-foreground/40">Connect</span>
-                  </button>
-                ))}
-              </div>
+              {Object.entries(groupedIntegrations).map(([category, items]) => (
+                <div key={category} className="mb-5">
+                  <p className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider mb-2 px-1">
+                    {category}
+                  </p>
+                  <div className="space-y-1.5">
+                    {items.map((item) => {
+                      const isConnected = connectedIntegrations.has(item.name);
+                      return (
+                        <motion.button
+                          key={item.name}
+                          onClick={() => toggleIntegration(item.name)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all ${
+                            isConnected
+                              ? "bg-foreground/[0.08] ring-1 ring-foreground/20"
+                              : "bg-secondary/40 ring-subtle"
+                          }`}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-foreground/[0.06] flex items-center justify-center flex-shrink-0 text-sm">
+                            {item.icon}
+                          </div>
+                          <span className="flex-1 text-xs font-medium text-foreground">{item.name}</span>
+                          <span className={`text-[10px] font-medium ${
+                            isConnected ? "text-green-400" : "text-muted-foreground/40"
+                          }`}>
+                            {isConnected ? "Connected" : "Connect"}
+                          </span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </motion.div>
           )}
         </AnimatePresence>
