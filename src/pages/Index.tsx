@@ -276,7 +276,7 @@ const Index = () => {
                           <FileText size={14} className="text-muted-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-foreground truncate">Meeting Note</p>
+                          <p className="text-xs font-medium text-foreground truncate">{note.title}</p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
                             {formatDate(note.timestamp)} · {formatDuration(note.duration)}
                           </p>
