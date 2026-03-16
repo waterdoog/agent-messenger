@@ -1,15 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic } from "lucide-react";
+import { sampleMeetingNotes, MeetingNote } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
 import RecordButton from "@/components/RecordButton";
 import ContextDrawer from "@/components/ContextDrawer";
 import AgentDispatchAnimation from "@/components/AgentDispatchAnimation";
 
-interface Note {
-  id: string;
-  duration: number;
-  timestamp: Date;
-}
 
 interface ChatMessage {
   id: string;
@@ -22,10 +18,7 @@ const Index = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dispatching, setDispatching] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
-  const [notes, setNotes] = useState<Note[]>([
-    { id: "1", duration: 912, timestamp: new Date(Date.now() - 86400000 * 2) },
-    { id: "2", duration: 340, timestamp: new Date(Date.now() - 86400000) },
-  ]);
+  const [notes, setNotes] = useState<MeetingNote[]>(sampleMeetingNotes);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     { id: "0", from: "agent", text: "Hey! I'm your courier agent. What do you need?" },
   ]);
@@ -40,7 +33,16 @@ const Index = () => {
   const handleRecordingComplete = (duration: number) => {
     setHasRecording(true);
     setNotes((prev) => [
-      { id: Date.now().toString(), duration, timestamp: new Date() },
+      {
+        id: Date.now().toString(),
+        title: "New Recording",
+        summary: "Recording captured",
+        duration,
+        timestamp: new Date(),
+        attendees: [],
+        actionItems: [],
+        tags: ["recording"],
+      },
       ...prev,
     ]);
   };
@@ -274,7 +276,7 @@ const Index = () => {
                           <FileText size={14} className="text-muted-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-foreground truncate">Meeting Note</p>
+                          <p className="text-xs font-medium text-foreground truncate">{note.title}</p>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
                             {formatDate(note.timestamp)} · {formatDuration(note.duration)}
                           </p>
@@ -360,6 +362,7 @@ const Index = () => {
         onClose={() => setDrawerOpen(false)}
         onSend={handleSend}
         hasRecording={hasRecording}
+        notes={notes}
       />
 
       <AgentDispatchAnimation
