@@ -11,6 +11,33 @@ export interface MeetingNote {
 
 export const sampleMeetingNotes: MeetingNote[] = [
   {
+    id: "note-pitch",
+    title: "Pitch Deck — Seed Round",
+    summary: "Finalized the seed round pitch deck. Covers company overview, product differentiation (Context Cells), traction (2,400 beta users, 38% WoW growth), TAM/SAM/SOM, and the $2.5M ask. Ready for investor outreach.",
+    duration: 2700,
+    timestamp: new Date(Date.now() - 86400000 * 0.2),
+    attendees: ["Lisa", "James", "Sarah", "Mike"],
+    actionItems: [
+      "Send deck to 5 target investors by Friday",
+      "Prepare financial appendix (separate, confidential)",
+      "Schedule practice pitch sessions",
+    ],
+    tags: ["fundraising", "pitch"],
+  },
+  {
+    id: "note-financial",
+    title: "Financial Report — Q1 2025",
+    summary: "Reviewed Q1 financials: $42K MRR, burn rate $85K/mo, 18-month runway at current pace. Unit economics improving — CAC down 22%, LTV/CAC ratio at 3.2x. Cap table updated post-angel round.",
+    duration: 3600,
+    timestamp: new Date(Date.now() - 86400000 * 0.8),
+    attendees: ["Lisa", "CFO", "James"],
+    actionItems: [
+      "Update financial model with Q1 actuals",
+      "Prepare investor-ready financials (redacted version)",
+      "Review cap table with legal counsel",
+    ],
+    tags: ["finance", "confidential"],
+  },
     id: "note-1",
     title: "Q1 Roadmap Planning",
     summary: "Discussed Q1 priorities: onboarding revamp (#1), API v2 (#2), analytics dashboard (#3). Sarah leads design, Mike owns backend. Two platform engineers joining next Monday. Beta target: March 28.",
