@@ -231,6 +231,17 @@ const Index = () => {
   const [profileView, setProfileView] = useState<"main" | "access">("main");
   const [accessTab, setAccessTab] = useState<"files" | "states">("files");
   const [brightMode, setBrightMode] = useState(false);
+  const [secretaryMode, setSecretaryMode] = useState(false);
+  const [secActiveContactId, setSecActiveContactId] = useState<string | null>(null);
+  const [secView, setSecView] = useState<"contacts" | "chat">("contacts");
+  const [secShowProfile, setSecShowProfile] = useState(false);
+  const [secProfileView, setSecProfileView] = useState<"main" | "access">("main");
+  const [secAccessTab, setSecAccessTab] = useState<"files" | "states">("files");
+  const [resolvedEscalations, setResolvedEscalations] = useState<Array<{id: string; guestName: string; request: string; resolved: "approved" | "denied"; timestamp: string}>>([
+    { id: "res-1", guestName: "Tom", request: "WhatsApp messages on Project X", resolved: "approved", timestamp: "Mar 12" },
+    { id: "res-2", guestName: "Lisa", request: "Calendar — private events", resolved: "denied", timestamp: "Mar 10" },
+    { id: "res-3", guestName: "Mike", request: "Meeting notes — Q4 Review", resolved: "approved", timestamp: "Mar 8" },
+  ]);
   const [escalations, setEscalations] = useState<EscalationRequest[]>([
     {
       id: "esc-1",
