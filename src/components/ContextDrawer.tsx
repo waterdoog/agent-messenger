@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, FileText, Calendar, FolderOpen, Check, ChevronDown, ChevronUp, Shield, Eye, CalendarPlus, Settings } from "lucide-react";
+import { X, FileText, Calendar, FolderOpen, Check, ChevronDown, ChevronUp, ChevronRight, Shield, Eye, CalendarPlus, Settings } from "lucide-react";
 import { useState } from "react";
 import { MeetingNote, FolderItem, CalendarPermission, sampleMeetingNotes, sampleFolders, calendarPermissions } from "@/data/sampleNotes";
 
