@@ -234,6 +234,8 @@ const Index = () => {
   const [secretaryMode, setSecretaryMode] = useState(false);
   const [secActiveContactId, setSecActiveContactId] = useState<string | null>(null);
   const [secView, setSecView] = useState<"contacts" | "chat">("contacts");
+  const [secInputText, setSecInputText] = useState("");
+  const [secChatMessages, setSecChatMessages] = useState<Record<string, ChatMessage[]>>({});
   const [secShowProfile, setSecShowProfile] = useState(false);
   const [secProfileView, setSecProfileView] = useState<"main" | "access">("main");
   const [secAccessTab, setSecAccessTab] = useState<"files" | "states">("files");
@@ -497,6 +499,56 @@ const Index = () => {
 
   const activeSecContact = secretaryContacts.find((c) => c.id === secActiveContactId);
 
+  const getSecMessages = (contactId: string): ChatMessage[] => {
+    const initial = secretaryMessages[contactId] || [];
+    const live = secChatMessages[contactId] || [];
+    return [...initial, ...live];
+  };
+
+  const secAutoReplies: Record<string, string[]> = {
+    "sec-carol": [
+      "Got it. I'll prepare read-only access to the Q1 Roadmap for Carol. Should I include the budget section?",
+      "Access granted. Carol will receive a notification shortly.",
+      "Anything else regarding Carol's request?",
+    ],
+    "sec-sarah": [
+      "Understood. I'll package the design specs from the March 10 meeting. Note: I'll redact the confidential client feedback section.",
+      "Done — Sarah now has access to the wireframes and color palette. The NDA section was excluded.",
+    ],
+    "sec-mike": [
+      "I'll extend Mike's access to include the latest API changelog as well. Sound good?",
+      "All set. Mike now has full read access to the API v2 docs and migration guide.",
+    ],
+    "sec-alex": [
+      "I'll add Alex as a viewer to Sprint Planning. He'll see current and future notes. Should I limit it to current sprint only?",
+      "Done — Alex has been added with view access to all sprint planning notes.",
+    ],
+  };
+
+  const handleSecSend = () => {
+    if (!secInputText.trim() || !secActiveContactId) return;
+    const userMsg: ChatMessage = { id: `sec-${Date.now()}`, from: "user", text: secInputText };
+    setSecChatMessages((prev) => ({
+      ...prev,
+      [secActiveContactId]: [...(prev[secActiveContactId] || []), userMsg],
+    }));
+    setSecInputText("");
+
+    const contactId = secActiveContactId;
+    const replies = secAutoReplies[contactId] || ["Understood. I'll handle that right away."];
+    const currentLive = secChatMessages[contactId] || [];
+    const userMsgCount = currentLive.filter((m) => m.from === "user").length;
+    const replyText = replies[userMsgCount % replies.length];
+
+    setTimeout(() => {
+      const agentMsg: ChatMessage = { id: `sec-a-${Date.now()}`, from: "agent", text: replyText };
+      setSecChatMessages((prev) => ({
+        ...prev,
+        [contactId]: [...(prev[contactId] || []), agentMsg],
+      }));
+    }, 400);
+  };
+
   // ========== SECRETARY MODE ==========
   if (secretaryMode) {
     if (secView === "contacts") {
@@ -592,7 +644,7 @@ const Index = () => {
 
           {/* Secretary chat messages */}
           <div className="flex-1 overflow-auto scrollbar-none px-5 py-2 space-y-2">
-            {(secretaryMessages[secActiveContactId || ""] || []).map((msg) => (
+            {getSecMessages(secActiveContactId || "").map((msg) => (
               <motion.div
                 key={msg.id}
                 className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
@@ -617,6 +669,7 @@ const Index = () => {
                 </div>
               </motion.div>
             ))}
+            <div ref={chatEndRef} />
           </div>
 
           {/* Secretary input */}
@@ -624,10 +677,14 @@ const Index = () => {
             <div className="flex items-center gap-2 bg-secondary/50 rounded-2xl ring-subtle px-3 py-1.5">
               <input
                 type="text"
+                value={secInputText}
+                onChange={(e) => setSecInputText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSecSend()}
                 placeholder={`Respond about ${activeSecContact?.name || ""}...`}
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none py-2"
               />
               <motion.button
+                onClick={handleSecSend}
                 className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0"
                 whileTap={{ scale: 0.9 }}
               >
