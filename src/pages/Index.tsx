@@ -503,31 +503,37 @@ const Index = () => {
     "sec-sarah": [
       { id: "ss1", from: "agent", text: "Sarah reached out asking for design specs." },
       { id: "ss2", from: "agent", text: "📎 **Request:** She wants the design specs from the **March 10 meeting**.\n\nSpecifically the wireframes and color palette decisions." },
-      { id: "ss3", from: "agent", text: "I flagged this since the meeting notes contain some confidential client feedback." },
+      { id: "ss3", from: "user", text: "⚠️ The meeting notes contain confidential client feedback. I'll share the wireframes and color palette only — redacting the NDA section." },
+      { id: "ss4", from: "agent", text: "Understood. I'll let Sarah know she has partial access." },
     ],
     "sec-mike": [
       { id: "sm1", from: "agent", text: "Mike P is requesting API documentation access." },
       { id: "sm2", from: "agent", text: "🔑 **Request:** Full access to **API v2 Specification** and **Migration Guide**.\n\nHe says he needs it for the integration project." },
-      { id: "sm3", from: "user", text: "That sounds fine, approve it" },
-      { id: "sm4", from: "agent", text: "✅ Done! I've granted Mike read access to both documents. He'll get a notification." },
+      { id: "sm3", from: "user", text: "Approved ✅ Both documents are in the mounted context. Granting read access now." },
+      { id: "sm4", from: "agent", text: "Done! Mike has been notified." },
     ],
     "sec-alex": [
       { id: "sa1", from: "agent", text: "Alex wants to be added to sprint planning notes." },
       { id: "sa2", from: "agent", text: "📝 **Request:** Add Alex as a viewer to the **Sprint Planning** folder.\n\nThis would give him access to all current and future sprint notes." },
+      { id: "sa3", from: "user", text: "I'll need to escalate this to the owner — sprint notes include performance reviews which aren't in my shareable context. 📨 Escalation sent." },
     ],
     "sec-dash": [
       { id: "sd1", from: "agent", text: "Hey! I'm Dash, Carol's agent. 👋" },
       { id: "sd2", from: "agent", text: "📋 Carol wants to share her **Project Timeline** with your agent.\n\nShe's proposing a context exchange — her timeline for your Q1 roadmap milestones." },
-      { id: "sd3", from: "agent", text: "Should I accept the exchange? I'll only share what's mounted in your context." },
+      { id: "sd3", from: "user", text: "Let me check what's in the roadmap milestones... ✅ No sensitive data. I'll accept the exchange." },
+      { id: "sd4", from: "agent", text: "Great! Exchange confirmed. Carol's timeline is now synced." },
     ],
     "sec-bolt": [
       { id: "sb1", from: "agent", text: "Bolt here — Eason's agent. 🔗" },
       { id: "sb2", from: "agent", text: "Eason's agent wants to **sync API endpoint specs** between your projects.\n\nThis would create a live link between your API docs and Eason's integration notes." },
-      { id: "sb3", from: "agent", text: "Note: this is agent-to-agent communication. No human data will be shared without escalation." },
+      { id: "sb3", from: "user", text: "Checking mounted context... API specs are shareable. Sync request approved ✅" },
+      { id: "sb4", from: "agent", text: "Sync established. Both agents can now reference shared API specs." },
+      { id: "sb5", from: "user", text: "Note: human data is not included in this sync. If Eason needs access to meeting notes, I'll escalate to the owner." },
     ],
     "sec-relay": [
       { id: "sr1", from: "agent", text: "Relay (Alex's agent) dropped off some files. 📎" },
       { id: "sr2", from: "agent", text: "Alex's agent shared:\n\n1. **API v2 Changelog** (3 pages)\n2. **Integration Test Results** (passed ✅)\n\nThese are read-only. Want me to add them to your Files?" },
+      { id: "sr3", from: "user", text: "Files received ✅ Added to the 'Shared with me' section. I'll notify the owner about the new files." },
     ],
   };
 
