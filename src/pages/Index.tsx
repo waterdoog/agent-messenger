@@ -644,7 +644,7 @@ const Index = () => {
 
           {/* Secretary chat messages */}
           <div className="flex-1 overflow-auto scrollbar-none px-5 py-2 space-y-2">
-            {(secretaryMessages[secActiveContactId || ""] || []).map((msg) => (
+            {getSecMessages(secActiveContactId || "").map((msg) => (
               <motion.div
                 key={msg.id}
                 className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
@@ -669,6 +669,7 @@ const Index = () => {
                 </div>
               </motion.div>
             ))}
+            <div ref={chatEndRef} />
           </div>
 
           {/* Secretary input */}
