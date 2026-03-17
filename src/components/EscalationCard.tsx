@@ -88,7 +88,7 @@ const EscalationCard = ({ escalation, onApprove, onDeny }: EscalationCardProps) 
           {/* Swipe hints - always visible */}
           <div className="flex items-center justify-between px-2 mb-1.5">
             <span className="text-[10px] text-destructive/70 font-medium flex items-center gap-1">
-              <X size={10} /> 左滑拒绝
+              <X size={10} /> Swipe to deny
             </span>
             <motion.span
               className="text-[10px] text-destructive font-semibold flex items-center gap-1"
@@ -103,7 +103,7 @@ const EscalationCard = ({ escalation, onApprove, onDeny }: EscalationCardProps) 
               ✓ Approve
             </motion.span>
             <span className="text-[10px] text-emerald-400/70 font-medium flex items-center gap-1">
-              右滑通过 <Check size={10} />
+              Swipe to approve <Check size={10} />
             </span>
           </div>
 
