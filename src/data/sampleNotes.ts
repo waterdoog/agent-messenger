@@ -38,6 +38,7 @@ export const sampleMeetingNotes: MeetingNote[] = [
     ],
     tags: ["finance", "confidential"],
   },
+  {
     id: "note-1",
     title: "Q1 Roadmap Planning",
     summary: "Discussed Q1 priorities: onboarding revamp (#1), API v2 (#2), analytics dashboard (#3). Sarah leads design, Mike owns backend. Two platform engineers joining next Monday. Beta target: March 28.",
