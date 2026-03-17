@@ -137,6 +137,17 @@ const sampleContacts: Contact[] = [
     isPinned: false,
     isAgent: true,
   },
+  {
+    id: "investor-demo",
+    name: "📊 Pitch Deck Demo",
+    avatar: "🚀",
+    avatarBg: "bg-violet-600",
+    lastMessage: "Tap to see the investor demo flow →",
+    lastMessageTime: "Demo",
+    unread: 0,
+    isPinned: false,
+    isAgent: false,
+  },
 ];
 
 // Pre-populated chat messages for non-Courier contacts
