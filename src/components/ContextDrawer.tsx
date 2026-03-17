@@ -138,30 +138,69 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
                       <div className="pt-2 space-y-1.5 max-h-[280px] overflow-auto scrollbar-none">
                         {sampleFolders.map((folder) => {
                           const selected = selectedFolders.has(folder.id);
+                          const expanded = expandedFolders.has(folder.id);
                           return (
-                            <motion.button
-                              key={folder.id}
-                              onClick={() => toggleFolder(folder.id)}
-                              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all ${
+                            <div key={folder.id}>
+                              <div className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all ${
                                 selected
                                   ? "bg-foreground/[0.08] ring-1 ring-foreground/20"
                                   : "bg-secondary/30 hover:bg-secondary/50"
-                              }`}
-                              whileTap={{ scale: 0.98 }}
-                            >
-                              <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                                selected ? "bg-foreground" : "border border-foreground/15"
                               }`}>
-                                {selected && <Check size={9} className="text-background" strokeWidth={3} />}
+                                <motion.button
+                                  onClick={() => toggleFolder(folder.id)}
+                                  className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
+                                    selected ? "bg-foreground" : "border border-foreground/15"
+                                  }`}
+                                  whileTap={{ scale: 0.9 }}
+                                >
+                                  {selected && <Check size={9} className="text-background" strokeWidth={3} />}
+                                </motion.button>
+                                <motion.button
+                                  onClick={() => setExpandedFolders(prev => {
+                                    const next = new Set(prev);
+                                    next.has(folder.id) ? next.delete(folder.id) : next.add(folder.id);
+                                    return next;
+                                  })}
+                                  className="flex items-center gap-3 flex-1 min-w-0"
+                                  whileTap={{ scale: 0.98 }}
+                                >
+                                  <span className="text-sm">{folder.icon}</span>
+                                  <div className="flex-1 min-w-0">
+                                    <p className={`text-xs font-medium ${selected ? "text-foreground" : "text-muted-foreground"}`}>
+                                      {folder.name}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground/60">{folder.files.length} files</p>
+                                  </div>
+                                  <motion.div animate={{ rotate: expanded ? 90 : 0 }} transition={{ duration: 0.15 }}>
+                                    <ChevronRight size={13} className="text-muted-foreground/40" />
+                                  </motion.div>
+                                </motion.button>
                               </div>
-                              <span className="text-sm">{folder.icon}</span>
-                              <div className="flex-1 min-w-0">
-                                <p className={`text-xs font-medium ${selected ? "text-foreground" : "text-muted-foreground"}`}>
-                                  {folder.name}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground/60">{folder.files.length} files</p>
-                              </div>
-                            </motion.button>
+                              <AnimatePresence>
+                                {expanded && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="overflow-hidden"
+                                  >
+                                    <div className="ml-8 pl-3 border-l border-foreground/[0.06] mt-1 mb-1 space-y-0.5">
+                                      {folder.files.map((file) => (
+                                        <div
+                                          key={file.id}
+                                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-left"
+                                        >
+                                          <FileText size={12} className="text-muted-foreground/40 flex-shrink-0" />
+                                          <p className="text-[11px] text-muted-foreground truncate flex-1">{file.name}</p>
+                                          <p className="text-[9px] text-muted-foreground/40 flex-shrink-0">{file.size}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
                           );
                         })}
                       </div>
