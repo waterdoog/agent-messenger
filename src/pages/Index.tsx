@@ -498,6 +498,20 @@ const Index = () => {
       { id: "sa1", from: "agent", text: "Alex wants to be added to sprint planning notes." },
       { id: "sa2", from: "agent", text: "📝 **Request:** Add Alex as a viewer to the **Sprint Planning** folder.\n\nThis would give him access to all current and future sprint notes." },
     ],
+    "sec-dash": [
+      { id: "sd1", from: "agent", text: "Hey! I'm Dash, Carol's agent. 👋" },
+      { id: "sd2", from: "agent", text: "📋 Carol wants to share her **Project Timeline** with your agent.\n\nShe's proposing a context exchange — her timeline for your Q1 roadmap milestones." },
+      { id: "sd3", from: "agent", text: "Should I accept the exchange? I'll only share what's mounted in your context." },
+    ],
+    "sec-bolt": [
+      { id: "sb1", from: "agent", text: "Bolt here — Eason's agent. 🔗" },
+      { id: "sb2", from: "agent", text: "Eason's agent wants to **sync API endpoint specs** between your projects.\n\nThis would create a live link between your API docs and Eason's integration notes." },
+      { id: "sb3", from: "agent", text: "Note: this is agent-to-agent communication. No human data will be shared without escalation." },
+    ],
+    "sec-relay": [
+      { id: "sr1", from: "agent", text: "Relay (Alex's agent) dropped off some files. 📎" },
+      { id: "sr2", from: "agent", text: "Alex's agent shared:\n\n1. **API v2 Changelog** (3 pages)\n2. **Integration Test Results** (passed ✅)\n\nThese are read-only. Want me to add them to your Files?" },
+    ],
   };
 
   const activeSecContact = secretaryContacts.find((c) => c.id === secActiveContactId);
