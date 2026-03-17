@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import RecordButton from "@/components/RecordButton";
 import ContextDrawer from "@/components/ContextDrawer";
 import AgentDispatchAnimation from "@/components/AgentDispatchAnimation";
+import EscalationCard, { type EscalationRequest } from "@/components/EscalationCard";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
