@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, Clock, Users, Tag, CheckSquare, File, Image, Table, Presentation, Code, Link2, ChevronRight, Search, Plus, UserPlus, X, Check, Shield, Eye, XCircle, ArrowLeft, Calendar, Sun, Moon } from "lucide-react";
+import { Send, FolderOpen, Plug, ArrowUpRight, FileText, Trash2, ChevronLeft, Mic, Square, Clock, Users, Tag, CheckSquare, File, Image, Table, Presentation, Code, Link2, ChevronRight, Search, Plus, UserPlus, X, Check, Shield, Eye, XCircle, ArrowLeft, Calendar, Sun, Moon, RefreshCw } from "lucide-react";
 import { sampleMeetingNotes, sampleFolders, MeetingNote, FolderItem } from "@/data/sampleNotes";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -231,6 +231,17 @@ const Index = () => {
   const [profileView, setProfileView] = useState<"main" | "access">("main");
   const [accessTab, setAccessTab] = useState<"files" | "states">("files");
   const [brightMode, setBrightMode] = useState(false);
+  const [secretaryMode, setSecretaryMode] = useState(false);
+  const [secActiveContactId, setSecActiveContactId] = useState<string | null>(null);
+  const [secView, setSecView] = useState<"contacts" | "chat">("contacts");
+  const [secShowProfile, setSecShowProfile] = useState(false);
+  const [secProfileView, setSecProfileView] = useState<"main" | "access">("main");
+  const [secAccessTab, setSecAccessTab] = useState<"files" | "states">("files");
+  const [resolvedEscalations, setResolvedEscalations] = useState<Array<{id: string; guestName: string; request: string; resolved: "approved" | "denied"; timestamp: string}>>([
+    { id: "res-1", guestName: "Tom", request: "WhatsApp messages on Project X", resolved: "approved", timestamp: "Mar 12" },
+    { id: "res-2", guestName: "Lisa", request: "Calendar — private events", resolved: "denied", timestamp: "Mar 10" },
+    { id: "res-3", guestName: "Mike", request: "Meeting notes — Q4 Review", resolved: "approved", timestamp: "Mar 8" },
+  ]);
   const [escalations, setEscalations] = useState<EscalationRequest[]>([
     {
       id: "esc-1",
@@ -451,6 +462,269 @@ const Index = () => {
   const allContacts = sampleContacts.filter((c) => !c.isPinned);
   const filteredPinned = pinnedContacts.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const filteredAll = allContacts.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  // Secretary mode incoming contacts (people messaging my agent)
+  const secretaryContacts = [
+    { id: "sec-carol", name: "Carol MA", avatar: "🐴", avatarBg: "bg-amber-800", lastMessage: "Can you share the Q1 roadmap with me?", lastMessageTime: "10 min ago", unread: 1 },
+    { id: "sec-sarah", name: "Sarah K", avatar: "S", avatarBg: "bg-rose-500", lastMessage: "I need the design specs from last week's meeting", lastMessageTime: "1h ago", unread: 0 },
+    { id: "sec-mike", name: "Mike P", avatar: "M", avatarBg: "bg-blue-500", lastMessage: "Can I get access to the API docs?", lastMessageTime: "3h ago", unread: 2 },
+    { id: "sec-alex", name: "Alex Rivera", avatar: "A", avatarBg: "bg-emerald-600", lastMessage: "Please add me to the sprint planning notes", lastMessageTime: "Yesterday", unread: 0 },
+  ];
+
+  const secretaryMessages: Record<string, ChatMessage[]> = {
+    "sec-carol": [
+      { id: "sc1", from: "agent", text: "Hey Courier! Carol is asking for access to some files." },
+      { id: "sc2", from: "agent", text: "📋 **Request:** Carol wants to view the **Q1 Roadmap** document.\n\nThis includes timeline, budget, and resource allocation details." },
+      { id: "sc3", from: "user", text: "What level of access is she asking for?" },
+      { id: "sc4", from: "agent", text: "Read-only access. She mentioned she needs it for her team's planning session tomorrow." },
+    ],
+    "sec-sarah": [
+      { id: "ss1", from: "agent", text: "Sarah reached out asking for design specs." },
+      { id: "ss2", from: "agent", text: "📎 **Request:** She wants the design specs from the **March 10 meeting**.\n\nSpecifically the wireframes and color palette decisions." },
+      { id: "ss3", from: "agent", text: "I flagged this since the meeting notes contain some confidential client feedback." },
+    ],
+    "sec-mike": [
+      { id: "sm1", from: "agent", text: "Mike P is requesting API documentation access." },
+      { id: "sm2", from: "agent", text: "🔑 **Request:** Full access to **API v2 Specification** and **Migration Guide**.\n\nHe says he needs it for the integration project." },
+      { id: "sm3", from: "user", text: "That sounds fine, approve it" },
+      { id: "sm4", from: "agent", text: "✅ Done! I've granted Mike read access to both documents. He'll get a notification." },
+    ],
+    "sec-alex": [
+      { id: "sa1", from: "agent", text: "Alex wants to be added to sprint planning notes." },
+      { id: "sa2", from: "agent", text: "📝 **Request:** Add Alex as a viewer to the **Sprint Planning** folder.\n\nThis would give him access to all current and future sprint notes." },
+    ],
+  };
+
+  const activeSecContact = secretaryContacts.find((c) => c.id === secActiveContactId);
+
+  // ========== SECRETARY MODE ==========
+  if (secretaryMode) {
+    if (secView === "contacts") {
+      return (
+        <div className="fixed inset-0 bg-background flex flex-col">
+          <div className="h-3 flex-shrink-0" />
+          <div className="px-5 pt-2 pb-3 flex-shrink-0 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Secretary</h1>
+              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-semibold">AGENT VIEW</span>
+            </div>
+            <motion.button
+              onClick={() => { setSecretaryMode(false); setSecView("contacts"); setSecActiveContactId(null); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/50 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              whileTap={{ scale: 0.95 }}
+            >
+              <RefreshCw size={12} />
+              Switch Back
+            </motion.button>
+          </div>
+
+          <div className="px-5 pb-3 flex-shrink-0">
+            <p className="text-[10px] text-muted-foreground/60 mb-3">People sending messages to your agent</p>
+          </div>
+
+          <div className="flex-1 overflow-auto scrollbar-none px-5">
+            <div className="space-y-0.5">
+              {secretaryContacts.map((contact) => (
+                <motion.button
+                  key={contact.id}
+                  onClick={() => { setSecActiveContactId(contact.id); setSecView("chat"); }}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left hover:bg-secondary/40 transition-colors"
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className={`w-10 h-10 rounded-full ${contact.avatarBg} flex items-center justify-center text-sm font-semibold text-white flex-shrink-0`}>
+                    {contact.avatar}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-foreground truncate">{contact.name}</p>
+                      <span className="text-[10px] text-muted-foreground/50 flex-shrink-0 ml-2">{contact.lastMessageTime}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground/60 truncate mt-0.5">{contact.lastMessage}</p>
+                  </div>
+                  {contact.unread > 0 && (
+                    <div className="w-5 h-5 rounded-full bg-foreground flex items-center justify-center flex-shrink-0">
+                      <span className="text-[10px] font-bold text-background">{contact.unread}</span>
+                    </div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Secretary chat view
+    return (
+      <div className="fixed inset-0 bg-background flex flex-col">
+        <div className="h-3 flex-shrink-0" />
+        <motion.nav
+          className="flex items-center justify-between px-5 py-2.5 flex-shrink-0"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <button
+            onClick={() => { setSecView("contacts"); setSecActiveContactId(null); }}
+            className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft size={14} />
+          </button>
+          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-semibold">AGENT VIEW</span>
+          <div className="w-16" />
+        </motion.nav>
+
+        <div className="h-px bg-foreground/[0.06]" />
+
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="px-5 pt-4 pb-2 flex items-center gap-3 flex-shrink-0">
+            <button
+              onClick={() => { setSecShowProfile(true); setSecProfileView("main"); }}
+              className={`w-8 h-8 rounded-full ${activeSecContact?.avatarBg || "bg-muted"} flex items-center justify-center text-sm font-semibold text-white flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-foreground/20 transition-all`}
+            >
+              {activeSecContact?.avatar || "?"}
+            </button>
+            <div>
+              <h1 className="text-sm font-semibold text-foreground tracking-tight">{activeSecContact?.name || "Chat"}</h1>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Incoming request</p>
+            </div>
+          </div>
+
+          {/* Secretary chat messages */}
+          <div className="flex-1 overflow-auto scrollbar-none px-5 py-2 space-y-2">
+            {(secretaryMessages[secActiveContactId || ""] || []).map((msg) => (
+              <motion.div
+                key={msg.id}
+                className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div
+                  className={`max-w-[80%] px-3.5 py-2.5 text-xs leading-relaxed ${
+                    msg.from === "user"
+                      ? "bg-foreground text-background rounded-2xl rounded-br-md"
+                      : "bg-secondary/60 text-foreground rounded-2xl rounded-bl-md"
+                  }`}
+                >
+                  {msg.from === "agent" ? (
+                    <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5">
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    msg.text
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Secretary input */}
+          <div className="px-5 pb-8 pt-3 flex-shrink-0">
+            <div className="flex items-center gap-2 bg-secondary/50 rounded-2xl ring-subtle px-3 py-1.5">
+              <input
+                type="text"
+                placeholder={`Respond about ${activeSecContact?.name || ""}...`}
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none py-2"
+              />
+              <motion.button
+                className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0"
+                whileTap={{ scale: 0.9 }}
+              >
+                <Send size={14} className="text-background" />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {/* Secretary Profile Overlay */}
+        <AnimatePresence>
+          {secShowProfile && activeSecContact && (
+            <>
+              <motion.div
+                className="fixed inset-0 bg-black/70 z-40 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSecShowProfile(false)}
+              />
+              <motion.div
+                className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-[28px] ring-subtle max-h-[70vh] overflow-auto scrollbar-none"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 32, stiffness: 300 }}
+              >
+                <div className="flex justify-center pt-3 pb-1">
+                  <div className="w-8 h-[3px] rounded-full bg-foreground/10" />
+                </div>
+                <div className="px-6 pb-10 pt-2">
+                  <AnimatePresence mode="wait">
+                    {secProfileView === "main" ? (
+                      <motion.div key="sec-profile-main" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                        <div className="flex items-center justify-between mb-1">
+                          <h2 className="text-base font-semibold text-foreground tracking-tight">Requester</h2>
+                          <button onClick={() => setSecShowProfile(false)} className="text-muted-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                            <X size={18} />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-3 mt-4 mb-6">
+                          <div className={`w-14 h-14 rounded-full ${activeSecContact.avatarBg} flex items-center justify-center text-lg font-bold text-white`}>
+                            {activeSecContact.avatar}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">{activeSecContact.name}</p>
+                            <p className="text-[11px] text-muted-foreground">Requesting access via your agent</p>
+                          </div>
+                        </div>
+                        <motion.button
+                          onClick={() => setSecProfileView("access")}
+                          className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-secondary/40 ring-subtle hover:bg-secondary/60 transition-colors"
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-foreground/[0.08] flex items-center justify-center">
+                            <Shield size={14} className="text-foreground" />
+                          </div>
+                          <span className="flex-1 text-left text-xs font-medium text-foreground">Access History</span>
+                          <ChevronRight size={14} className="text-muted-foreground" />
+                        </motion.button>
+                      </motion.div>
+                    ) : (
+                      <motion.div key="sec-profile-access" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                        <div className="flex items-center gap-2 mb-4">
+                          <button onClick={() => setSecProfileView("main")} className="text-muted-foreground p-1 rounded-lg hover:bg-secondary transition-colors">
+                            <ArrowLeft size={16} />
+                          </button>
+                          <h2 className="text-base font-semibold text-foreground tracking-tight">Access History</h2>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mb-3">Your past approval decisions</p>
+                        <div className="space-y-2">
+                          {resolvedEscalations.map((esc) => (
+                            <div key={esc.id} className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-secondary/30">
+                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${esc.resolved === "approved" ? "bg-emerald-500/10" : "bg-red-500/10"}`}>
+                                {esc.resolved === "approved" ? <Check size={14} className="text-emerald-500" /> : <XCircle size={14} className="text-red-400" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-foreground truncate">{esc.request}</p>
+                                <p className="text-[10px] text-muted-foreground">{esc.guestName} · {esc.timestamp}</p>
+                              </div>
+                              <span className={`text-[10px] font-medium ${esc.resolved === "approved" ? "text-emerald-500" : "text-red-400"}`}>
+                                {esc.resolved === "approved" ? "Approved" : "Denied"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
 
   // ========== CONTACTS LIST VIEW ==========
   if (view === "contacts") {
@@ -1336,6 +1610,23 @@ const Index = () => {
                         <span className="flex-1 text-left text-xs font-medium text-foreground">Access</span>
                         <ChevronRight size={14} className="text-muted-foreground" />
                       </motion.button>
+
+                      {isCourierChat && (
+                        <motion.button
+                          onClick={() => { setShowProfile(false); setSecretaryMode(true); setSecView("contacts"); }}
+                          className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/[0.08] ring-1 ring-primary/20 hover:bg-primary/[0.14] transition-colors mt-2"
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <RefreshCw size={14} className="text-primary" />
+                          </div>
+                          <div className="flex-1 text-left">
+                            <span className="text-xs font-medium text-foreground block">Switch to Secretary</span>
+                            <span className="text-[10px] text-muted-foreground">See incoming requests to your agent</span>
+                          </div>
+                          <ChevronRight size={14} className="text-muted-foreground" />
+                        </motion.button>
+                      )}
                     </motion.div>
                   ) : (
                     <motion.div key="profile-access" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
