@@ -216,6 +216,7 @@ export const sampleFolders: FolderItem[] = [
     ],
   },
   {
+    id: "folder-1",
     name: "Product Specs",
     icon: "📁",
     files: [
