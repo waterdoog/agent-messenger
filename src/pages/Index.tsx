@@ -499,6 +499,56 @@ const Index = () => {
 
   const activeSecContact = secretaryContacts.find((c) => c.id === secActiveContactId);
 
+  const getSecMessages = (contactId: string): ChatMessage[] => {
+    const initial = secretaryMessages[contactId] || [];
+    const live = secChatMessages[contactId] || [];
+    return [...initial, ...live];
+  };
+
+  const secAutoReplies: Record<string, string[]> = {
+    "sec-carol": [
+      "Got it. I'll prepare read-only access to the Q1 Roadmap for Carol. Should I include the budget section?",
+      "Access granted. Carol will receive a notification shortly.",
+      "Anything else regarding Carol's request?",
+    ],
+    "sec-sarah": [
+      "Understood. I'll package the design specs from the March 10 meeting. Note: I'll redact the confidential client feedback section.",
+      "Done — Sarah now has access to the wireframes and color palette. The NDA section was excluded.",
+    ],
+    "sec-mike": [
+      "I'll extend Mike's access to include the latest API changelog as well. Sound good?",
+      "All set. Mike now has full read access to the API v2 docs and migration guide.",
+    ],
+    "sec-alex": [
+      "I'll add Alex as a viewer to Sprint Planning. He'll see current and future notes. Should I limit it to current sprint only?",
+      "Done — Alex has been added with view access to all sprint planning notes.",
+    ],
+  };
+
+  const handleSecSend = () => {
+    if (!secInputText.trim() || !secActiveContactId) return;
+    const userMsg: ChatMessage = { id: `sec-${Date.now()}`, from: "user", text: secInputText };
+    setSecChatMessages((prev) => ({
+      ...prev,
+      [secActiveContactId]: [...(prev[secActiveContactId] || []), userMsg],
+    }));
+    setSecInputText("");
+
+    const contactId = secActiveContactId;
+    const replies = secAutoReplies[contactId] || ["Understood. I'll handle that right away."];
+    const currentLive = secChatMessages[contactId] || [];
+    const userMsgCount = currentLive.filter((m) => m.from === "user").length;
+    const replyText = replies[userMsgCount % replies.length];
+
+    setTimeout(() => {
+      const agentMsg: ChatMessage = { id: `sec-a-${Date.now()}`, from: "agent", text: replyText };
+      setSecChatMessages((prev) => ({
+        ...prev,
+        [contactId]: [...(prev[contactId] || []), agentMsg],
+      }));
+    }, 400);
+  };
+
   // ========== SECRETARY MODE ==========
   if (secretaryMode) {
     if (secView === "contacts") {
