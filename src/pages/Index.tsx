@@ -600,7 +600,7 @@ const Index = () => {
           </div>
 
           <div className="px-5 pb-3 flex-shrink-0">
-            <p className="text-[10px] text-muted-foreground/60 mb-3">People sending messages to your agent</p>
+            <p className="text-[10px] text-muted-foreground/60 mb-3">People & agents messaging your agent</p>
           </div>
 
           <div className="flex-1 overflow-auto scrollbar-none px-5">
@@ -612,12 +612,30 @@ const Index = () => {
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left hover:bg-secondary/40 transition-colors"
                   whileTap={{ scale: 0.98 }}
                 >
-                  <div className={`w-10 h-10 rounded-full ${contact.avatarBg} flex items-center justify-center text-sm font-semibold text-white flex-shrink-0`}>
+                  <div className={`w-10 h-10 rounded-full ${contact.isAgent ? "bg-secondary/80" : contact.avatarBg} flex items-center justify-center text-sm font-semibold text-white flex-shrink-0`}>
                     {contact.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-foreground truncate">{contact.name}</p>
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {contact.name}
+                        {contact.agentName && (
+                          <span className="text-muted-foreground/50 font-normal"> ({contact.agentName})</span>
+                        )}
+                      </p>
+                      <span className="text-[10px] text-muted-foreground/50 flex-shrink-0 ml-2">{contact.lastMessageTime}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground/60 truncate mt-0.5">{contact.lastMessage}</p>
+                  </div>
+                  {contact.unread > 0 && (
+                    <div className="w-5 h-5 rounded-full bg-foreground flex items-center justify-center flex-shrink-0">
+                      <span className="text-[10px] font-bold text-background">{contact.unread}</span>
+                    </div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+          </div>
                       <span className="text-[10px] text-muted-foreground/50 flex-shrink-0 ml-2">{contact.lastMessageTime}</span>
                     </div>
                     <p className="text-xs text-muted-foreground/60 truncate mt-0.5">{contact.lastMessage}</p>
