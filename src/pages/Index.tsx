@@ -231,6 +231,30 @@ const Index = () => {
   const [profileView, setProfileView] = useState<"main" | "access">("main");
   const [accessTab, setAccessTab] = useState<"files" | "states">("files");
   const [brightMode, setBrightMode] = useState(false);
+  const [escalations, setEscalations] = useState<EscalationRequest[]>([
+    {
+      id: "esc-1",
+      guestName: "Sarah K",
+      guestAvatar: "S",
+      guestAvatarBg: "bg-rose-500",
+      agentName: "Dash (Carol's Agent)",
+      request: "Requesting access to Q1 Roadmap document",
+      detail: "Sarah asked Carol's agent for the Q1 roadmap planning doc. This file contains sensitive timeline and resource allocation data.",
+      timestamp: "Just now",
+      severity: "medium",
+    },
+    {
+      id: "esc-2",
+      guestName: "Mike P",
+      guestAvatar: "M",
+      guestAvatarBg: "bg-blue-500",
+      agentName: "Bolt (Eason's Agent)",
+      request: "Wants to join the API sync meeting",
+      detail: "Mike asked Eason's agent to add him to the recurring API sync call. This would give him access to internal API discussions.",
+      timestamp: "5 min ago",
+      severity: "high",
+    },
+  ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
