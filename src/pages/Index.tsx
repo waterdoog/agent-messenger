@@ -1286,6 +1286,20 @@ const Index = () => {
                         </div>
                       </motion.div>
                     ))}
+                    {/* Investor Demo CTA */}
+                    {activeContactId === "investor-demo" && (
+                      <motion.a
+                        href="/pitchdeck"
+                        target="_blank"
+                        className="block w-full px-4 py-4 rounded-2xl bg-primary/[0.08] ring-1 ring-primary/20 text-center hover:bg-primary/[0.14] transition-colors mt-2"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <p className="text-xs font-semibold text-foreground mb-1">🚀 Try the Investor View</p>
+                        <p className="text-[10px] text-muted-foreground">Open /pitchdeck to see what the investor experiences</p>
+                      </motion.a>
+                    )}
                   </>
                 )}
 
