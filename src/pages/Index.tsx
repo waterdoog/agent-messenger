@@ -194,6 +194,12 @@ const contactMessages: Record<string, ChatMessage[]> = {
     { id: "aa2", from: "agent", text: "Alex shared 2 files with you:\n\n1. **API v2 Specification** (12 pages)\n2. **Migration Guide** (8 pages)\n\nBoth are read-only access." },
     { id: "aa3", from: "agent", text: "Alex also mentioned: breaking changes in v2 need a migration guide review before March 20. Want me to set a reminder?" },
   ],
+  "investor-demo": [
+    { id: "id1", from: "agent", text: "Hey! This is the **Pitch Deck Demo** — it shows how Pulse lets founders share a pitch deck with investors via an AI agent." },
+    { id: "id2", from: "agent", text: "**The scenario:**\n\n🎯 You (the founder) want to share your pitch deck with an investor\n\n✅ The investor's questions get answered by AI\n\n🔒 But financial data (burn rate, cap table, revenue) is **physically excluded** — not even prompt injection can leak it" },
+    { id: "id3", from: "agent", text: "**How it works in Pulse:**\n\n1. You mount the pitch deck in Context Cells ✅\n2. You do NOT mount financial notes ❌\n3. You dispatch me (Courier) to the investor\n4. I can only answer from mounted context\n5. Financial questions trigger an escalation back to you" },
+    { id: "id4", from: "agent", text: "**Try it yourself →** Open the investor view at `/pitchdeck` to see what the investor experiences.\n\nTry asking about traction (works ✅) vs burn rate (blocked 🔒)" },
+  ],
 };
 
 const integrations: Integration[] = [
