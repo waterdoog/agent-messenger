@@ -201,8 +201,6 @@ export const sampleFolders: FolderItem[] = [
     name: "Meeting Notes",
     icon: "📝",
     files: [
-      { id: "fn-pitch", name: "Pitch Deck — Seed Round.slide", type: "slide", size: "5.2 MB", updatedAt: new Date(Date.now() - 86400000 * 0.2) },
-      { id: "fn-financial", name: "Financial Report — Q1 2025.sheet", type: "sheet", size: "1.8 MB", updatedAt: new Date(Date.now() - 86400000 * 0.8) },
       { id: "fn-1", name: "Q1 Roadmap Planning.doc", type: "doc", size: "420 KB", updatedAt: new Date(Date.now() - 86400000 * 0.5) },
       { id: "fn-2", name: "Design Review — Onboarding Flow.doc", type: "doc", size: "380 KB", updatedAt: new Date(Date.now() - 86400000 * 1) },
       { id: "fn-3", name: "API v2 Architecture Discussion.doc", type: "doc", size: "510 KB", updatedAt: new Date(Date.now() - 86400000 * 2) },
@@ -213,6 +211,31 @@ export const sampleFolders: FolderItem[] = [
       { id: "fn-8", name: "Security Review — Auth System.doc", type: "doc", size: "620 KB", updatedAt: new Date(Date.now() - 86400000 * 7) },
       { id: "fn-9", name: "Product Sync — Mobile Strategy.doc", type: "doc", size: "350 KB", updatedAt: new Date(Date.now() - 86400000 * 9) },
       { id: "fn-10", name: "Vendor Evaluation — Monitoring Tools.doc", type: "doc", size: "280 KB", updatedAt: new Date(Date.now() - 86400000 * 11) },
+    ],
+  },
+  {
+    id: "folder-vc",
+    name: "VC / Pitch",
+    icon: "🚀",
+    files: [
+      { id: "fvc-1", name: "Pitch Deck — Seed Round.slide", type: "slide", size: "5.2 MB", updatedAt: new Date(Date.now() - 86400000 * 0.2) },
+      { id: "fvc-2", name: "Investor One-Pager.pdf", type: "pdf", size: "1.4 MB", updatedAt: new Date(Date.now() - 86400000 * 1) },
+      { id: "fvc-3", name: "Market Analysis.pdf", type: "pdf", size: "3.1 MB", updatedAt: new Date(Date.now() - 86400000 * 3) },
+      { id: "fvc-4", name: "Competitive Landscape.slide", type: "slide", size: "2.8 MB", updatedAt: new Date(Date.now() - 86400000 * 5) },
+      { id: "fvc-5", name: "Team Bios.doc", type: "doc", size: "520 KB", updatedAt: new Date(Date.now() - 86400000 * 7) },
+    ],
+  },
+  {
+    id: "folder-finance",
+    name: "Financial Documents",
+    icon: "💰",
+    files: [
+      { id: "ffin-1", name: "Financial Report — Q1 2025.sheet", type: "sheet", size: "1.8 MB", updatedAt: new Date(Date.now() - 86400000 * 0.8) },
+      { id: "ffin-2", name: "Revenue Projections 2025.sheet", type: "sheet", size: "960 KB", updatedAt: new Date(Date.now() - 86400000 * 2) },
+      { id: "ffin-3", name: "Cap Table.sheet", type: "sheet", size: "340 KB", updatedAt: new Date(Date.now() - 86400000 * 4) },
+      { id: "ffin-4", name: "Burn Rate Analysis.sheet", type: "sheet", size: "280 KB", updatedAt: new Date(Date.now() - 86400000 * 6) },
+      { id: "ffin-5", name: "Unit Economics Model.sheet", type: "sheet", size: "420 KB", updatedAt: new Date(Date.now() - 86400000 * 8) },
+      { id: "ffin-6", name: "Term Sheet — Draft.pdf", type: "pdf", size: "1.2 MB", updatedAt: new Date(Date.now() - 86400000 * 10) },
     ],
   },
   {
