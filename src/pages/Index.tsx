@@ -540,6 +540,18 @@ const Index = () => {
       "I'll add Alex as a viewer to Sprint Planning. He'll see current and future notes. Should I limit it to current sprint only?",
       "Done — Alex has been added with view access to all sprint planning notes.",
     ],
+    "sec-dash": [
+      "I'll review Carol's proposed context exchange. She wants to trade her project timeline for your roadmap milestones.",
+      "Exchange accepted. Carol's timeline is now visible in your Files. Your milestones have been shared back.",
+    ],
+    "sec-bolt": [
+      "Setting up the API endpoint sync with Eason's agent. This will be agent-to-agent only — no human data exposed.",
+      "Sync established. Both agents can now reference shared API specs without escalation.",
+    ],
+    "sec-relay": [
+      "I'll add Alex's files to your Files panel under a new 'Shared with me' section.",
+      "Done. Both files are now accessible in your Files.",
+    ],
   };
 
   const handleSecSend = () => {
