@@ -465,12 +465,15 @@ const Index = () => {
   const filteredPinned = pinnedContacts.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const filteredAll = allContacts.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  // Secretary mode incoming contacts (people messaging my agent)
+  // Secretary mode incoming contacts (people & agents messaging my agent)
   const secretaryContacts = [
-    { id: "sec-carol", name: "Carol MA", avatar: "🐴", avatarBg: "bg-amber-800", lastMessage: "Can you share the Q1 roadmap with me?", lastMessageTime: "10 min ago", unread: 1 },
-    { id: "sec-sarah", name: "Sarah K", avatar: "S", avatarBg: "bg-rose-500", lastMessage: "I need the design specs from last week's meeting", lastMessageTime: "1h ago", unread: 0 },
-    { id: "sec-mike", name: "Mike P", avatar: "M", avatarBg: "bg-blue-500", lastMessage: "Can I get access to the API docs?", lastMessageTime: "3h ago", unread: 2 },
-    { id: "sec-alex", name: "Alex Rivera", avatar: "A", avatarBg: "bg-emerald-600", lastMessage: "Please add me to the sprint planning notes", lastMessageTime: "Yesterday", unread: 0 },
+    { id: "sec-carol", name: "Carol MA", avatar: "🐴", avatarBg: "bg-amber-800", isAgent: false, lastMessage: "Can you share the Q1 roadmap with me?", lastMessageTime: "10 min ago", unread: 1 },
+    { id: "sec-dash", name: "Dash", agentName: "Carol's Agent", avatar: "⚡", avatarBg: "bg-secondary/80", isAgent: true, lastMessage: "📋 Carol wants to share her project timeline with you", lastMessageTime: "8 min ago", unread: 1 },
+    { id: "sec-sarah", name: "Sarah K", avatar: "S", avatarBg: "bg-rose-500", isAgent: false, lastMessage: "I need the design specs from last week's meeting", lastMessageTime: "1h ago", unread: 0 },
+    { id: "sec-mike", name: "Mike P", avatar: "M", avatarBg: "bg-blue-500", isAgent: false, lastMessage: "Can I get access to the API docs?", lastMessageTime: "3h ago", unread: 2 },
+    { id: "sec-bolt", name: "Bolt", agentName: "Eason's Agent", avatar: "⚡", avatarBg: "bg-secondary/80", isAgent: true, lastMessage: "🔗 Eason wants to sync API endpoints with your agent", lastMessageTime: "4h ago", unread: 0 },
+    { id: "sec-alex", name: "Alex Rivera", avatar: "A", avatarBg: "bg-emerald-600", isAgent: false, lastMessage: "Please add me to the sprint planning notes", lastMessageTime: "Yesterday", unread: 0 },
+    { id: "sec-relay", name: "Relay", agentName: "Alex's Agent", avatar: "⚡", avatarBg: "bg-secondary/80", isAgent: true, lastMessage: "📎 Alex's agent shared 2 files for your review", lastMessageTime: "Yesterday", unread: 1 },
   ];
 
   const secretaryMessages: Record<string, ChatMessage[]> = {
@@ -494,6 +497,20 @@ const Index = () => {
     "sec-alex": [
       { id: "sa1", from: "agent", text: "Alex wants to be added to sprint planning notes." },
       { id: "sa2", from: "agent", text: "📝 **Request:** Add Alex as a viewer to the **Sprint Planning** folder.\n\nThis would give him access to all current and future sprint notes." },
+    ],
+    "sec-dash": [
+      { id: "sd1", from: "agent", text: "Hey! I'm Dash, Carol's agent. 👋" },
+      { id: "sd2", from: "agent", text: "📋 Carol wants to share her **Project Timeline** with your agent.\n\nShe's proposing a context exchange — her timeline for your Q1 roadmap milestones." },
+      { id: "sd3", from: "agent", text: "Should I accept the exchange? I'll only share what's mounted in your context." },
+    ],
+    "sec-bolt": [
+      { id: "sb1", from: "agent", text: "Bolt here — Eason's agent. 🔗" },
+      { id: "sb2", from: "agent", text: "Eason's agent wants to **sync API endpoint specs** between your projects.\n\nThis would create a live link between your API docs and Eason's integration notes." },
+      { id: "sb3", from: "agent", text: "Note: this is agent-to-agent communication. No human data will be shared without escalation." },
+    ],
+    "sec-relay": [
+      { id: "sr1", from: "agent", text: "Relay (Alex's agent) dropped off some files. 📎" },
+      { id: "sr2", from: "agent", text: "Alex's agent shared:\n\n1. **API v2 Changelog** (3 pages)\n2. **Integration Test Results** (passed ✅)\n\nThese are read-only. Want me to add them to your Files?" },
     ],
   };
 
@@ -522,6 +539,18 @@ const Index = () => {
     "sec-alex": [
       "I'll add Alex as a viewer to Sprint Planning. He'll see current and future notes. Should I limit it to current sprint only?",
       "Done — Alex has been added with view access to all sprint planning notes.",
+    ],
+    "sec-dash": [
+      "I'll review Carol's proposed context exchange. She wants to trade her project timeline for your roadmap milestones.",
+      "Exchange accepted. Carol's timeline is now visible in your Files. Your milestones have been shared back.",
+    ],
+    "sec-bolt": [
+      "Setting up the API endpoint sync with Eason's agent. This will be agent-to-agent only — no human data exposed.",
+      "Sync established. Both agents can now reference shared API specs without escalation.",
+    ],
+    "sec-relay": [
+      "I'll add Alex's files to your Files panel under a new 'Shared with me' section.",
+      "Done. Both files are now accessible in your Files.",
     ],
   };
 
@@ -571,7 +600,7 @@ const Index = () => {
           </div>
 
           <div className="px-5 pb-3 flex-shrink-0">
-            <p className="text-[10px] text-muted-foreground/60 mb-3">People sending messages to your agent</p>
+            <p className="text-[10px] text-muted-foreground/60 mb-3">People & agents messaging your agent</p>
           </div>
 
           <div className="flex-1 overflow-auto scrollbar-none px-5">
@@ -583,12 +612,17 @@ const Index = () => {
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left hover:bg-secondary/40 transition-colors"
                   whileTap={{ scale: 0.98 }}
                 >
-                  <div className={`w-10 h-10 rounded-full ${contact.avatarBg} flex items-center justify-center text-sm font-semibold text-white flex-shrink-0`}>
+                  <div className={`w-10 h-10 rounded-full ${contact.isAgent ? "bg-secondary/80" : contact.avatarBg} flex items-center justify-center text-sm font-semibold text-white flex-shrink-0`}>
                     {contact.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-foreground truncate">{contact.name}</p>
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {contact.name}
+                        {contact.agentName && (
+                          <span className="text-muted-foreground/50 font-normal"> ({contact.agentName})</span>
+                        )}
+                      </p>
                       <span className="text-[10px] text-muted-foreground/50 flex-shrink-0 ml-2">{contact.lastMessageTime}</span>
                     </div>
                     <p className="text-xs text-muted-foreground/60 truncate mt-0.5">{contact.lastMessage}</p>
