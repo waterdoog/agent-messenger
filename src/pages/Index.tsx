@@ -677,10 +677,14 @@ const Index = () => {
             <div className="flex items-center gap-2 bg-secondary/50 rounded-2xl ring-subtle px-3 py-1.5">
               <input
                 type="text"
+                value={secInputText}
+                onChange={(e) => setSecInputText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSecSend()}
                 placeholder={`Respond about ${activeSecContact?.name || ""}...`}
                 className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 outline-none py-2"
               />
               <motion.button
+                onClick={handleSecSend}
                 className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0"
                 whileTap={{ scale: 0.9 }}
               >
