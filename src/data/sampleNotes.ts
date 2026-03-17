@@ -197,7 +197,25 @@ export interface FolderItem {
 
 export const sampleFolders: FolderItem[] = [
   {
-    id: "folder-1",
+    id: "folder-notes",
+    name: "Meeting Notes",
+    icon: "📝",
+    files: [
+      { id: "fn-pitch", name: "Pitch Deck — Seed Round.slide", type: "slide", size: "5.2 MB", updatedAt: new Date(Date.now() - 86400000 * 0.2) },
+      { id: "fn-financial", name: "Financial Report — Q1 2025.sheet", type: "sheet", size: "1.8 MB", updatedAt: new Date(Date.now() - 86400000 * 0.8) },
+      { id: "fn-1", name: "Q1 Roadmap Planning.doc", type: "doc", size: "420 KB", updatedAt: new Date(Date.now() - 86400000 * 0.5) },
+      { id: "fn-2", name: "Design Review — Onboarding Flow.doc", type: "doc", size: "380 KB", updatedAt: new Date(Date.now() - 86400000 * 1) },
+      { id: "fn-3", name: "API v2 Architecture Discussion.doc", type: "doc", size: "510 KB", updatedAt: new Date(Date.now() - 86400000 * 2) },
+      { id: "fn-4", name: "Sprint Retrospective — Sprint 14.doc", type: "doc", size: "290 KB", updatedAt: new Date(Date.now() - 86400000 * 3) },
+      { id: "fn-5", name: "Client Call — Acme Corp Integration.doc", type: "doc", size: "340 KB", updatedAt: new Date(Date.now() - 86400000 * 4) },
+      { id: "fn-6", name: "Analytics Dashboard Kickoff.doc", type: "doc", size: "410 KB", updatedAt: new Date(Date.now() - 86400000 * 5) },
+      { id: "fn-7", name: "1:1 with James — Career Growth.doc", type: "doc", size: "180 KB", updatedAt: new Date(Date.now() - 86400000 * 6) },
+      { id: "fn-8", name: "Security Review — Auth System.doc", type: "doc", size: "620 KB", updatedAt: new Date(Date.now() - 86400000 * 7) },
+      { id: "fn-9", name: "Product Sync — Mobile Strategy.doc", type: "doc", size: "350 KB", updatedAt: new Date(Date.now() - 86400000 * 9) },
+      { id: "fn-10", name: "Vendor Evaluation — Monitoring Tools.doc", type: "doc", size: "280 KB", updatedAt: new Date(Date.now() - 86400000 * 11) },
+    ],
+  },
+  {
     name: "Product Specs",
     icon: "📁",
     files: [

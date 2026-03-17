@@ -135,39 +135,6 @@ const ContextDrawer = ({ isOpen, onClose, onSend, notes }: ContextDrawerProps) =
                       className="overflow-hidden"
                     >
                       <div className="pt-2 space-y-1.5 max-h-[280px] overflow-auto scrollbar-none">
-                        <p className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider px-1 pt-1">Meeting Notes</p>
-                        {notes.map((note) => {
-                          const selected = selectedNotes.has(note.id);
-                          return (
-                            <motion.button
-                              key={note.id}
-                              onClick={() => toggleNote(note.id)}
-                              className={`w-full flex items-start gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all ${
-                                selected
-                                  ? "bg-foreground/[0.08] ring-1 ring-foreground/20"
-                                  : "bg-secondary/30 hover:bg-secondary/50"
-                              }`}
-                              whileTap={{ scale: 0.98 }}
-                            >
-                              <div className={`w-4 h-4 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                                selected ? "bg-foreground" : "border border-foreground/15"
-                              }`}>
-                                {selected && <Check size={9} className="text-background" strokeWidth={3} />}
-                              </div>
-                              <FileText size={14} className="text-muted-foreground/60 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className={`text-xs font-medium truncate ${selected ? "text-foreground" : "text-muted-foreground"}`}>
-                                  {note.title}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground/60 mt-0.5 truncate">
-                                  {formatDate(note.timestamp)} · {formatDuration(note.duration)} · {note.attendees.length} people
-                                </p>
-                              </div>
-                            </motion.button>
-                          );
-                        })}
-
-                        <p className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider px-1 pt-2">Folders</p>
                         {sampleFolders.map((folder) => {
                           const selected = selectedFolders.has(folder.id);
                           return (
