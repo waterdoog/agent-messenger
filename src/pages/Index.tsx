@@ -906,6 +906,25 @@ const Index = () => {
                     ))}
                   </>
                 )}
+
+                {/* Escalation Cards */}
+                {isCourierChat && escalations.length > 0 && (
+                  <div className="space-y-3 py-2">
+                    {escalations.map((esc) => (
+                      <EscalationCard
+                        key={esc.id}
+                        escalation={esc}
+                        onApprove={(id) => {
+                          console.log("Approved:", id);
+                        }}
+                        onDeny={(id) => {
+                          console.log("Denied:", id);
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 <div ref={chatEndRef} />
               </div>
 
