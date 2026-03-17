@@ -465,12 +465,15 @@ const Index = () => {
   const filteredPinned = pinnedContacts.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const filteredAll = allContacts.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  // Secretary mode incoming contacts (people messaging my agent)
+  // Secretary mode incoming contacts (people & agents messaging my agent)
   const secretaryContacts = [
-    { id: "sec-carol", name: "Carol MA", avatar: "🐴", avatarBg: "bg-amber-800", lastMessage: "Can you share the Q1 roadmap with me?", lastMessageTime: "10 min ago", unread: 1 },
-    { id: "sec-sarah", name: "Sarah K", avatar: "S", avatarBg: "bg-rose-500", lastMessage: "I need the design specs from last week's meeting", lastMessageTime: "1h ago", unread: 0 },
-    { id: "sec-mike", name: "Mike P", avatar: "M", avatarBg: "bg-blue-500", lastMessage: "Can I get access to the API docs?", lastMessageTime: "3h ago", unread: 2 },
-    { id: "sec-alex", name: "Alex Rivera", avatar: "A", avatarBg: "bg-emerald-600", lastMessage: "Please add me to the sprint planning notes", lastMessageTime: "Yesterday", unread: 0 },
+    { id: "sec-carol", name: "Carol MA", avatar: "🐴", avatarBg: "bg-amber-800", isAgent: false, lastMessage: "Can you share the Q1 roadmap with me?", lastMessageTime: "10 min ago", unread: 1 },
+    { id: "sec-dash", name: "Dash", agentName: "Carol's Agent", avatar: "⚡", avatarBg: "bg-secondary/80", isAgent: true, lastMessage: "📋 Carol wants to share her project timeline with you", lastMessageTime: "8 min ago", unread: 1 },
+    { id: "sec-sarah", name: "Sarah K", avatar: "S", avatarBg: "bg-rose-500", isAgent: false, lastMessage: "I need the design specs from last week's meeting", lastMessageTime: "1h ago", unread: 0 },
+    { id: "sec-mike", name: "Mike P", avatar: "M", avatarBg: "bg-blue-500", isAgent: false, lastMessage: "Can I get access to the API docs?", lastMessageTime: "3h ago", unread: 2 },
+    { id: "sec-bolt", name: "Bolt", agentName: "Eason's Agent", avatar: "⚡", avatarBg: "bg-secondary/80", isAgent: true, lastMessage: "🔗 Eason wants to sync API endpoints with your agent", lastMessageTime: "4h ago", unread: 0 },
+    { id: "sec-alex", name: "Alex Rivera", avatar: "A", avatarBg: "bg-emerald-600", isAgent: false, lastMessage: "Please add me to the sprint planning notes", lastMessageTime: "Yesterday", unread: 0 },
+    { id: "sec-relay", name: "Relay", agentName: "Alex's Agent", avatar: "⚡", avatarBg: "bg-secondary/80", isAgent: true, lastMessage: "📎 Alex's agent shared 2 files for your review", lastMessageTime: "Yesterday", unread: 1 },
   ];
 
   const secretaryMessages: Record<string, ChatMessage[]> = {
