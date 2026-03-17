@@ -234,6 +234,8 @@ const Index = () => {
   const [secretaryMode, setSecretaryMode] = useState(false);
   const [secActiveContactId, setSecActiveContactId] = useState<string | null>(null);
   const [secView, setSecView] = useState<"contacts" | "chat">("contacts");
+  const [secInputText, setSecInputText] = useState("");
+  const [secChatMessages, setSecChatMessages] = useState<Record<string, ChatMessage[]>>({});
   const [secShowProfile, setSecShowProfile] = useState(false);
   const [secProfileView, setSecProfileView] = useState<"main" | "access">("main");
   const [secAccessTab, setSecAccessTab] = useState<"files" | "states">("files");
